@@ -201,13 +201,21 @@ Configuración (Tab 3)
 
 ## 🚀 Próximos Pasos
 
+### ✅ Completado
+
 1. **Setup del proyecto** Ionic + Vue
 2. **Crear estructura de carpetas** y componentes base
-3. **Implementar servicios** de LocalStorage
-4. **Desarrollar Dashboard** con KPIs principales
-5. **Crear CRUD** de clientes/centros
-6. **Implementar filtros** y búsqueda
-7. **Agregar datos de ejemplo** basados en tu Excel
+3. **Desarrollar Dashboard** con KPIs principales
+
+### 🔄 En Progreso - Sección Clientes
+
+4. **Crear página de Clientes** con lista y gestión
+5. **Implementar formulario** para agregar/editar clientes
+6. **Crear sistema de facturación mensual** por cliente
+7. **Implementar servicios** de LocalStorage para persistencia
+8. **Conectar datos** con el Dashboard (KPIs dinámicos)
+9. **Implementar filtros** y búsqueda de clientes
+10. **Agregar validaciones** y mejoras de UX
 
 ---
 
