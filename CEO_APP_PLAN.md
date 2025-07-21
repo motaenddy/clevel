@@ -34,6 +34,16 @@ Crear una aplicación móvil híbrida para ayudar al CEO en su día a día, opti
 
 ## 📋 Funcionalidades Planificadas
 
+### 🎯 PRIORIDAD 1: Seguimiento de Pagos de Clientes
+
+- [ ] Dashboard de pagos pendientes
+- [ ] Lista de clientes con estado de pago
+- [ ] Alertas de pagos vencidos
+- [ ] Historial de pagos por cliente
+- [ ] Filtros por estado (Pagado, Pendiente, Vencido)
+- [ ] Notificaciones de pagos próximos a vencer
+- [ ] Exportación de reportes de cobranza
+
 ### Dashboard Principal
 
 - [ ] Resumen ejecutivo diario
@@ -78,35 +88,44 @@ Crear una aplicación móvil híbrida para ayudar al CEO en su día a día, opti
 - [ ] Configuración de rutas
 - [ ] Implementación de LocalStorage service
 
-### Sprint 2: Dashboard y Navegación
+### Sprint 2: Seguimiento de Pagos (PRIORIDAD)
+
+- [ ] Modelo de datos para clientes y pagos
+- [ ] Dashboard de pagos pendientes
+- [ ] Lista de clientes con filtros
+- [ ] CRUD de clientes y pagos
+- [ ] Alertas y notificaciones
+- [ ] Persistencia en LocalStorage
+
+### Sprint 3: Dashboard y Navegación
 
 - [ ] Tab navigation
 - [ ] Dashboard principal
 - [ ] Componentes base
 - [ ] Estilos globales
 
-### Sprint 3: Gestión de Tareas
+### Sprint 4: Gestión de Tareas
 
 - [ ] CRUD de tareas
 - [ ] Sistema de prioridades
 - [ ] Filtros y búsqueda
 - [ ] Persistencia en LocalStorage
 
-### Sprint 4: Gestión de Equipo
+### Sprint 5: Gestión de Equipo
 
 - [ ] CRUD de empleados
 - [ ] Información de contacto
 - [ ] Asignación de tareas
 - [ ] Perfiles de usuario
 
-### Sprint 5: Métricas y Reportes
+### Sprint 6: Métricas y Reportes
 
 - [ ] Componentes de gráficos
 - [ ] KPIs dashboard
 - [ ] Reportes básicos
 - [ ] Exportación
 
-### Sprint 6: Optimización y Testing
+### Sprint 7: Optimización y Testing
 
 - [ ] Testing de componentes
 - [ ] Optimización de rendimiento
