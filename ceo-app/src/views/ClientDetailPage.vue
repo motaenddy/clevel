@@ -198,6 +198,13 @@
           </ion-card-content>
         </ion-card>
       </div>
+
+      <!-- Floating Action Button -->
+      <ion-fab vertical="bottom" horizontal="end" slot="fixed">
+        <ion-fab-button @click="navigateToBilling" color="primary">
+          <ion-icon :icon="card"></ion-icon>
+        </ion-fab-button>
+      </ion-fab>
     </ion-content>
 
     <!-- Edit Field Modal -->
@@ -292,16 +299,19 @@ import {
   IonCol,
   IonModal,
   IonSpinner,
+  IonFab,
+  IonFabButton,
 } from "@ionic/vue";
-import { create, alert, add, document, checkmark } from "ionicons/icons";
+import { create, alert, add, document, checkmark, card } from "ionicons/icons";
 import { ref, computed, onMounted } from "vue";
-import { useRoute } from "vue-router";
+import { useRoute, useRouter } from "vue-router";
 import { useClientsStore } from "../stores/clients";
 import { useBillingStore } from "../stores/billing";
 import BillingForm from "../components/BillingForm.vue";
 
-// Route
+// Route and router
 const route = useRoute();
+const router = useRouter();
 
 // Stores
 const clientsStore = useClientsStore();
@@ -421,6 +431,10 @@ const saveField = async () => {
 const markAsPaid = () => {
   // TODO: Implement mark as paid functionality
   console.log("Mark as paid clicked");
+};
+
+const navigateToBilling = () => {
+  router.push(`/client/${clientId.value}/billing`);
 };
 
 const sendReminder = () => {

@@ -1,73 +1,91 @@
 <template>
   <div class="billing-form">
     <ion-list>
+      <!-- Fecha de Facturación -->
       <ion-item>
-        <ion-label position="stacked">Mes/Año *</ion-label>
+        <ion-label position="stacked">Fecha de Facturación *</ion-label>
         <ion-input
-          v-model="form.mes"
-          type="month"
-          :class="{ 'ion-invalid': errors.mes }"
-        ></ion-input>
-        <ion-note slot="error" v-if="errors.mes">{{ errors.mes }}</ion-note>
-      </ion-item>
-
-      <ion-item>
-        <ion-label position="stacked">Monto Facturado (RD$) *</ion-label>
-        <ion-input
-          v-model="form.montoFacturado"
-          type="number"
-          placeholder="0.00"
-          :class="{ 'ion-invalid': errors.montoFacturado }"
-        ></ion-input>
-        <ion-note slot="error" v-if="errors.montoFacturado">{{
-          errors.montoFacturado
-        }}</ion-note>
-      </ion-item>
-
-      <ion-item>
-        <ion-label position="stacked">Monto Pagado (RD$)</ion-label>
-        <ion-input
-          v-model="form.montoPagado"
-          type="number"
-          placeholder="0.00"
-        ></ion-input>
-      </ion-item>
-
-      <ion-item>
-        <ion-label position="stacked">Fecha de Vencimiento *</ion-label>
-        <ion-input
-          v-model="form.fechaVencimiento"
+          v-model="form.fechaFacturacion"
           type="date"
-          :class="{ 'ion-invalid': errors.fechaVencimiento }"
+          :class="{ 'ion-invalid': errors.fechaFacturacion }"
         ></ion-input>
-        <ion-note slot="error" v-if="errors.fechaVencimiento">{{
-          errors.fechaVencimiento
+        <ion-note slot="error" v-if="errors.fechaFacturacion">{{
+          errors.fechaFacturacion
         }}</ion-note>
       </ion-item>
 
+      <!-- Items de Facturación -->
+      <ion-item-divider>
+        <ion-label>Items de Facturación</ion-label>
+        <ion-button slot="end" fill="clear" size="small" @click="addItem">
+          <ion-icon :icon="add"></ion-icon>
+          Agregar Item
+        </ion-button>
+      </ion-item-divider>
+
+      <div
+        v-for="(item, index) in form.items"
+        :key="index"
+        class="item-container"
+      >
+        <ion-item>
+          <ion-label position="stacked">Descripción</ion-label>
+          <ion-input
+            v-model="item.descripcion"
+            placeholder="Descripción del servicio/producto"
+            :class="{
+              'ion-invalid': errors.items && errors.items[index]?.descripcion,
+            }"
+          ></ion-input>
+          <ion-note
+            slot="error"
+            v-if="errors.items && errors.items[index]?.descripcion"
+          >
+            {{ errors.items[index].descripcion }}
+          </ion-note>
+        </ion-item>
+
+        <ion-item>
+          <ion-label position="stacked">Monto (RD$)</ion-label>
+          <ion-input
+            v-model="item.monto"
+            type="number"
+            placeholder="0.00"
+            @ionInput="calculateTotal"
+            :class="{
+              'ion-invalid': errors.items && errors.items[index]?.monto,
+            }"
+          ></ion-input>
+          <ion-note
+            slot="error"
+            v-if="errors.items && errors.items[index]?.monto"
+          >
+            {{ errors.items[index].monto }}
+          </ion-note>
+          <ion-button
+            slot="end"
+            fill="clear"
+            color="danger"
+            @click="removeItem(index)"
+          >
+            <ion-icon :icon="trash"></ion-icon>
+          </ion-button>
+        </ion-item>
+      </div>
+
+      <!-- Total -->
       <ion-item>
-        <ion-label position="stacked">Fecha de Compromiso</ion-label>
-        <ion-input v-model="form.fechaCompromiso" type="date"></ion-input>
+        <ion-label>
+          <h2>Total Facturado</h2>
+        </ion-label>
+        <ion-note slot="end">
+          <h2 class="total-amount">
+            RD$ {{ totalAmount.toLocaleString("es-DO") }}
+          </h2>
+        </ion-note>
       </ion-item>
 
-      <ion-item>
-        <ion-label position="stacked">Cuotas Vencidas</ion-label>
-        <ion-input
-          v-model="form.cuotasVencidas"
-          type="number"
-          placeholder="0"
-        ></ion-input>
-      </ion-item>
-
-      <ion-item>
-        <ion-label position="stacked">Estado</ion-label>
-        <ion-select v-model="form.estado" placeholder="Selecciona el estado">
-          <ion-select-option value="pendiente">Pendiente</ion-select-option>
-          <ion-select-option value="pagado">Pagado</ion-select-option>
-          <ion-select-option value="vencido">Vencido</ion-select-option>
-        </ion-select>
-      </ion-item>
-
+      <!-- Notas -->
       <ion-item>
         <ion-label position="stacked">Notas</ion-label>
         <ion-textarea
@@ -80,7 +98,7 @@
 
     <div class="form-actions">
       <ion-button expand="block" @click="saveBilling" :disabled="!isFormValid">
-        {{ isEditing ? "Actualizar Facturación" : "Agregar Facturación" }}
+        {{ isEditing ? "Actualizar Facturación" : "Crear Facturación" }}
       </ion-button>
     </div>
   </div>
@@ -93,13 +111,19 @@ import {
   IonLabel,
   IonInput,
   IonTextarea,
-  IonSelect,
-  IonSelectOption,
   IonNote,
   IonButton,
+  IonItemDivider,
 } from "@ionic/vue";
 import { ref, computed, defineEmits, defineProps, watch } from "vue";
+import { add, trash } from "ionicons/icons";
 import type { MonthlyBilling } from "../services/StorageService";
+
+// Interface for billing items
+interface BillingItem {
+  descripcion: string;
+  monto: number;
+}
 
 // Props
 const props = defineProps<{
@@ -114,64 +138,82 @@ const emit = defineEmits<{
 
 // Form data
 const form = ref({
-  mes: "",
-  montoFacturado: "",
-  montoPagado: "",
-  fechaVencimiento: "",
-  fechaCompromiso: "",
-  cuotasVencidas: "",
-  estado: "pendiente" as "pendiente" | "pagado" | "vencido",
+  fechaFacturacion: "",
+  items: [] as BillingItem[],
   notas: "",
 });
 
 // Validation errors
 const errors = ref({
-  mes: "",
-  montoFacturado: "",
-  fechaVencimiento: "",
+  fechaFacturacion: "",
+  items: {} as { [key: number]: { descripcion?: string; monto?: string } },
 });
 
 // Computed properties
 const isEditing = computed(() => !!props.billing);
+const totalAmount = computed(() => {
+  return form.value.items.reduce(
+    (sum, item) => sum + (parseFloat(item.monto.toString()) || 0),
+    0
+  );
+});
+
 const isFormValid = computed(() => {
   return (
-    form.value.mes &&
-    form.value.montoFacturado &&
-    parseFloat(form.value.montoFacturado) > 0 &&
-    form.value.fechaVencimiento
+    form.value.fechaFacturacion &&
+    form.value.items.length > 0 &&
+    form.value.items.every((item) => item.descripcion && item.monto > 0)
   );
 });
 
 // Methods
+const addItem = () => {
+  form.value.items.push({
+    descripcion: "",
+    monto: 0,
+  });
+};
+
+const removeItem = (index: number) => {
+  form.value.items.splice(index, 1);
+  calculateTotal();
+};
+
+const calculateTotal = () => {
+  // Total is calculated automatically by computed property
+};
+
 const validateForm = () => {
   errors.value = {
-    mes: "",
-    montoFacturado: "",
-    fechaVencimiento: "",
+    fechaFacturacion: "",
+    items: {},
   };
 
   let isValid = true;
 
-  // Validate mes
-  if (!form.value.mes) {
-    errors.value.mes = "El mes es requerido";
+  // Validate fechaFacturacion
+  if (!form.value.fechaFacturacion) {
+    errors.value.fechaFacturacion = "La fecha de facturación es requerida";
     isValid = false;
   }
 
-  // Validate montoFacturado
-  if (!form.value.montoFacturado) {
-    errors.value.montoFacturado = "El monto facturado es requerido";
-    isValid = false;
-  } else if (parseFloat(form.value.montoFacturado) <= 0) {
-    errors.value.montoFacturado = "El monto debe ser mayor a 0";
-    isValid = false;
-  }
-
-  // Validate fechaVencimiento
-  if (!form.value.fechaVencimiento) {
-    errors.value.fechaVencimiento = "La fecha de vencimiento es requerida";
-    isValid = false;
-  }
+  // Validate items
+  form.value.items.forEach((item, index) => {
+    if (!item.descripcion) {
+      errors.value.items[index] = {
+        ...errors.value.items[index],
+        descripcion: "La descripción es requerida",
+      };
+      isValid = false;
+    }
+    if (!item.monto || item.monto <= 0) {
+      errors.value.items[index] = {
+        ...errors.value.items[index],
+        monto: "El monto debe ser mayor a 0",
+      };
+      isValid = false;
+    }
+  });
 
   return isValid;
 };
@@ -184,17 +226,16 @@ const saveBilling = () => {
   const billingData: MonthlyBilling = {
     id: props.billing?.id || generateId(),
     clienteId: props.clientId,
-    mes: form.value.mes,
-    montoFacturado: parseFloat(form.value.montoFacturado),
-    montoPagado: parseFloat(form.value.montoPagado) || 0,
-    fechaUltimoPago: null, // Will be set when payment is made
-    fechaVencimiento: new Date(form.value.fechaVencimiento),
-    cuotasVencidas: parseInt(form.value.cuotasVencidas) || 0,
-    fechaCompromiso: form.value.fechaCompromiso
-      ? new Date(form.value.fechaCompromiso)
-      : null,
-    estado: form.value.estado,
+    mes: new Date(form.value.fechaFacturacion).toISOString().slice(0, 7), // YYYY-MM format
+    montoFacturado: totalAmount.value,
+    montoPagado: 0, // Default to 0 for new billing
+    fechaUltimoPago: null,
+    fechaVencimiento: new Date(form.value.fechaFacturacion), // Use billing date as due date
+    cuotasVencidas: 0,
+    fechaCompromiso: null,
+    estado: "pendiente",
     notas: form.value.notas,
+    items: form.value.items, // Add items to billing data
   };
 
   emit("billing-saved", billingData);
@@ -211,19 +252,13 @@ const generateId = () => {
 
 const resetForm = () => {
   form.value = {
-    mes: "",
-    montoFacturado: "",
-    montoPagado: "",
-    fechaVencimiento: "",
-    fechaCompromiso: "",
-    cuotasVencidas: "",
-    estado: "pendiente",
+    fechaFacturacion: "",
+    items: [],
     notas: "",
   };
   errors.value = {
-    mes: "",
-    montoFacturado: "",
-    fechaVencimiento: "",
+    fechaFacturacion: "",
+    items: {},
   };
 };
 
@@ -279,6 +314,24 @@ ion-item {
 
 ion-label[position="stacked"] {
   font-weight: 500;
+  margin-bottom: 8px;
+}
+
+.item-container {
+  border: 1px solid var(--ion-color-light);
+  border-radius: 8px;
+  margin-bottom: 16px;
+  padding: 8px;
+  background-color: var(--ion-color-light-tint);
+}
+
+.total-amount {
+  color: var(--ion-color-primary);
+  font-weight: bold;
+}
+
+ion-item-divider {
+  margin-top: 16px;
   margin-bottom: 8px;
 }
 </style>

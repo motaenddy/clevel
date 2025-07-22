@@ -17,6 +17,11 @@ export interface Client {
   cuotasVencidas?: number;
 }
 
+export interface BillingItem {
+  descripcion: string;
+  monto: number;
+}
+
 export interface MonthlyBilling {
   id: string;
   clienteId: string;
@@ -29,6 +34,7 @@ export interface MonthlyBilling {
   fechaCompromiso: Date | null;
   estado: 'pendiente' | 'pagado' | 'vencido';
   notas: string;
+  items?: BillingItem[]; // Optional items for detailed billing
 }
 
 export interface AppSettings {
