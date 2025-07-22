@@ -161,7 +161,7 @@
                       @click.stop="markAsPaid(billing)"
                     >
                       <ion-icon :icon="checkmark"></ion-icon>
-                      Marcar como Pagado
+                      Cobrar Factura
                     </ion-button>
 
                     <ion-button
@@ -225,6 +225,24 @@
         />
       </ion-content>
     </ion-modal>
+
+    <!-- Payment Modal -->
+    <PaymentModal
+      :is-open="showPaymentModal"
+      :billing="selectedBillingForPayment"
+      :client-name="client?.nombre || ''"
+      @payment-processed="onPaymentProcessed"
+      @modal-closed="onPaymentModalClosed"
+    />
+
+    <!-- Toast Notification -->
+    <ion-toast
+      :is-open="showToast"
+      :message="toastMessage"
+      :color="toastColor"
+      duration="3000"
+      @didDismiss="showToast = false"
+    />
   </ion-page>
 </template>
 
@@ -250,9 +268,9 @@ import {
   IonModal,
   IonSpinner,
   IonAvatar,
+  IonToast,
 } from "@ionic/vue";
 import {
-  create,
   alert,
   add,
   document,
@@ -261,14 +279,14 @@ import {
   mail,
 } from "ionicons/icons";
 import { ref, computed, onMounted } from "vue";
-import { useRoute, useRouter } from "vue-router";
+import { useRoute } from "vue-router";
 import { useClientsStore } from "../stores/clients";
 import { useBillingStore } from "../stores/billing";
 import BillingForm from "../components/BillingForm.vue";
+import PaymentModal from "../components/PaymentModal.vue";
 
-// Route and router
+// Route
 const route = useRoute();
-const router = useRouter();
 
 // Stores
 const clientsStore = useClientsStore();
@@ -278,7 +296,12 @@ const billingStore = useBillingStore();
 const loading = ref(true);
 const showAddBillingModal = ref(false);
 const showEditBillingModal = ref(false);
+const showPaymentModal = ref(false);
 const selectedBilling = ref(null);
+const selectedBillingForPayment = ref(null);
+const showToast = ref(false);
+const toastMessage = ref("");
+const toastColor = ref("success");
 
 // Computed properties
 const clientId = computed(() => route.params.id as string);
@@ -353,8 +376,8 @@ const editBilling = (billing: any) => {
 };
 
 const markAsPaid = (billing: any) => {
-  // TODO: Implement mark as paid functionality
-  console.log("Mark as paid clicked for billing:", billing.id);
+  selectedBillingForPayment.value = billing;
+  showPaymentModal.value = true;
 };
 
 const sendReminder = (billing: any) => {
@@ -379,6 +402,45 @@ const onBillingUpdated = async (updatedBilling: any) => {
   } catch (error) {
     console.error("Error updating billing:", error);
   }
+};
+
+const onPaymentProcessed = async (payment: any) => {
+  try {
+    // Update the billing record with the payment
+    const billing = selectedBillingForPayment.value;
+    if (!billing) return;
+
+    const updatedBilling = {
+      ...billing,
+      montoPagado: billing.montoPagado + payment.amount,
+      fechaUltimoPago: new Date(payment.date),
+      estado:
+        billing.montoPagado + payment.amount >= billing.montoFacturado
+          ? "pagado"
+          : "pendiente",
+    };
+
+    await billingStore.updateBilling(updatedBilling);
+    showPaymentModal.value = false;
+    selectedBillingForPayment.value = null;
+
+    // Show success message
+    const paymentType = payment.type === "complete" ? "Pago completo" : "Abono";
+    const message = `${paymentType} de RD$ ${payment.amount.toLocaleString(
+      "es-DO"
+    )} registrado el ${new Date(payment.date).toLocaleDateString("es-ES")}`;
+
+    toastMessage.value = message;
+    toastColor.value = "success";
+    showToast.value = true;
+  } catch (error) {
+    console.error("Error processing payment:", error);
+  }
+};
+
+const onPaymentModalClosed = () => {
+  showPaymentModal.value = false;
+  selectedBillingForPayment.value = null;
 };
 
 // Load data on mount
