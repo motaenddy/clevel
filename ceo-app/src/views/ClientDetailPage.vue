@@ -316,6 +316,30 @@
         <BillingForm :client-id="clientId" @billing-saved="onBillingAdded" />
       </ion-content>
     </ion-modal>
+
+    <!-- Edit Billing Modal -->
+    <ion-modal
+      :is-open="showEditBillingModal"
+      @didDismiss="showEditBillingModal = false"
+    >
+      <ion-header>
+        <ion-toolbar>
+          <ion-title>Editar Facturación</ion-title>
+          <ion-buttons slot="end">
+            <ion-button @click="showEditBillingModal = false"
+              >Cancelar</ion-button
+            >
+          </ion-buttons>
+        </ion-toolbar>
+      </ion-header>
+      <ion-content>
+        <BillingForm
+          :client-id="clientId"
+          :billing="selectedBilling"
+          @billing-saved="onBillingUpdated"
+        />
+      </ion-content>
+    </ion-modal>
   </ion-page>
 </template>
 
@@ -364,8 +388,10 @@ const billingStore = useBillingStore();
 const loading = ref(true);
 const showEditFieldModal = ref(false);
 const showAddBillingModal = ref(false);
+const showEditBillingModal = ref(false);
 const editingField = ref("");
 const editingValue = ref("");
+const selectedBilling = ref(null);
 
 // Computed properties
 const clientId = computed(() => route.params.id as string);
@@ -495,6 +521,11 @@ const saveField = async () => {
   }
 };
 
+const editBilling = (billing: any) => {
+  selectedBilling.value = billing;
+  showEditBillingModal.value = true;
+};
+
 const markAsPaid = () => {
   // TODO: Implement mark as paid functionality
   console.log("Mark as paid clicked");
@@ -511,6 +542,16 @@ const onBillingAdded = async (newBilling: any) => {
     showAddBillingModal.value = false;
   } catch (error) {
     console.error("Error adding billing:", error);
+  }
+};
+
+const onBillingUpdated = async (updatedBilling: any) => {
+  try {
+    await billingStore.updateBilling(updatedBilling);
+    showEditBillingModal.value = false;
+    selectedBilling.value = null;
+  } catch (error) {
+    console.error("Error updating billing:", error);
   }
 };
 

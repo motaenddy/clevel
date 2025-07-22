@@ -10,11 +10,15 @@ export const useBillingStore = defineStore('billing', () => {
 
   // Getters
   const getBillingByClient = computed(() => (clientId: string) => 
-    billing.value.filter(b => b.clienteId === clientId)
+    billing.value
+      .filter(b => b.clienteId === clientId)
+      .sort((a, b) => new Date(b.mes + '-01').getTime() - new Date(a.mes + '-01').getTime())
   )
 
   const getBillingByMonth = computed(() => (month: string) => 
-    billing.value.filter(b => b.mes === month)
+    billing.value
+      .filter(b => b.mes === month)
+      .sort((a, b) => new Date(b.mes + '-01').getTime() - new Date(a.mes + '-01').getTime())
   )
 
   const overdueBilling = computed(() => 
@@ -172,7 +176,11 @@ export const useBillingStore = defineStore('billing', () => {
         cuotasVencidas: 15,
         fechaCompromiso: null,
         estado: 'vencido',
-        notas: 'Primera facturación del año'
+        notas: 'Primera facturación del año',
+        items: [
+          { descripcion: 'Servicios de consulta médica', monto: 25000 },
+          { descripcion: 'Servicios de laboratorio', monto: 15000 }
+        ]
       },
       {
         id: '2',
@@ -185,7 +193,11 @@ export const useBillingStore = defineStore('billing', () => {
         cuotasVencidas: 8,
         fechaCompromiso: new Date('2024-07-15'),
         estado: 'pendiente',
-        notas: 'Pago parcial realizado'
+        notas: 'Pago parcial realizado',
+        items: [
+          { descripcion: 'Servicios de consulta médica', monto: 25000 },
+          { descripcion: 'Servicios de laboratorio', monto: 15000 }
+        ]
       },
       {
         id: '3',
@@ -198,7 +210,11 @@ export const useBillingStore = defineStore('billing', () => {
         cuotasVencidas: 0,
         fechaCompromiso: null,
         estado: 'pagado',
-        notas: 'Pago completo realizado'
+        notas: 'Pago completo realizado',
+        items: [
+          { descripcion: 'Servicios de consulta médica', monto: 25000 },
+          { descripcion: 'Servicios de laboratorio', monto: 15000 }
+        ]
       },
       {
         id: '4',
@@ -211,7 +227,11 @@ export const useBillingStore = defineStore('billing', () => {
         cuotasVencidas: 5,
         fechaCompromiso: new Date('2024-07-20'),
         estado: 'pendiente',
-        notas: 'Pendiente de pago'
+        notas: 'Pendiente de pago',
+        items: [
+          { descripcion: 'Servicios de consulta médica', monto: 25000 },
+          { descripcion: 'Servicios de laboratorio', monto: 15000 }
+        ]
       },
       
       // INEMED (Cliente 2) - 2 facturas de 60,000
@@ -226,7 +246,11 @@ export const useBillingStore = defineStore('billing', () => {
         cuotasVencidas: 22,
         fechaCompromiso: new Date('2024-07-08'),
         estado: 'vencido',
-        notas: 'Cliente con múltiples cuotas vencidas'
+        notas: 'Cliente con múltiples cuotas vencidas',
+        items: [
+          { descripcion: 'Servicios de emergencia', monto: 40000 },
+          { descripcion: 'Servicios de terapia intensiva', monto: 20000 }
+        ]
       },
       {
         id: '6',
@@ -239,7 +263,11 @@ export const useBillingStore = defineStore('billing', () => {
         cuotasVencidas: 0,
         fechaCompromiso: null,
         estado: 'pagado',
-        notas: 'Pago completo realizado'
+        notas: 'Pago completo realizado',
+        items: [
+          { descripcion: 'Servicios de emergencia', monto: 40000 },
+          { descripcion: 'Servicios de terapia intensiva', monto: 20000 }
+        ]
       },
       
       // CLINICA DR MONTESINO (Cliente 3) - 3 facturas de 50,000
@@ -254,7 +282,11 @@ export const useBillingStore = defineStore('billing', () => {
         cuotasVencidas: 10,
         fechaCompromiso: new Date('2024-07-06'),
         estado: 'vencido',
-        notas: 'Cliente cancelado - factura vencida'
+        notas: 'Cliente cancelado - factura vencida',
+        items: [
+          { descripcion: 'Servicios de consulta especializada', monto: 30000 },
+          { descripcion: 'Servicios de diagnóstico', monto: 20000 }
+        ]
       },
       {
         id: '8',
@@ -267,7 +299,11 @@ export const useBillingStore = defineStore('billing', () => {
         cuotasVencidas: 8,
         fechaCompromiso: null,
         estado: 'vencido',
-        notas: 'Cliente cancelado - factura vencida'
+        notas: 'Cliente cancelado - factura vencida',
+        items: [
+          { descripcion: 'Servicios de consulta especializada', monto: 30000 },
+          { descripcion: 'Servicios de diagnóstico', monto: 20000 }
+        ]
       },
       {
         id: '9',
@@ -280,7 +316,11 @@ export const useBillingStore = defineStore('billing', () => {
         cuotasVencidas: 6,
         fechaCompromiso: null,
         estado: 'vencido',
-        notas: 'Cliente cancelado - factura vencida'
+        notas: 'Cliente cancelado - factura vencida',
+        items: [
+          { descripcion: 'Servicios de consulta especializada', monto: 30000 },
+          { descripcion: 'Servicios de diagnóstico', monto: 20000 }
+        ]
       }
     ]
   }

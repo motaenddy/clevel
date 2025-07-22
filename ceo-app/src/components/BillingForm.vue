@@ -228,12 +228,12 @@ const saveBilling = () => {
     clienteId: props.clientId,
     mes: new Date(form.value.fechaFacturacion).toISOString().slice(0, 7), // YYYY-MM format
     montoFacturado: totalAmount.value,
-    montoPagado: 0, // Default to 0 for new billing
-    fechaUltimoPago: null,
+    montoPagado: props.billing?.montoPagado || 0, // Preserve existing payment amount
+    fechaUltimoPago: props.billing?.fechaUltimoPago || null,
     fechaVencimiento: new Date(form.value.fechaFacturacion), // Use billing date as due date
-    cuotasVencidas: 0,
-    fechaCompromiso: null,
-    estado: "pendiente",
+    cuotasVencidas: props.billing?.cuotasVencidas || 0,
+    fechaCompromiso: props.billing?.fechaCompromiso || null,
+    estado: props.billing?.estado || "pendiente", // Preserve existing status
     notas: form.value.notas,
     items: form.value.items, // Add items to billing data
   };
@@ -280,22 +280,39 @@ watch(
 );
 
 // Initialize form with billing data if editing
-if (props.billing) {
-  form.value = {
-    mes: props.billing.mes,
-    montoFacturado: props.billing.montoFacturado.toString(),
-    montoPagado: props.billing.montoPagado.toString(),
-    fechaVencimiento: props.billing.fechaVencimiento
-      .toISOString()
-      .split("T")[0],
-    fechaCompromiso: props.billing.fechaCompromiso
-      ? props.billing.fechaCompromiso.toISOString().split("T")[0]
-      : "",
-    cuotasVencidas: props.billing.cuotasVencidas.toString(),
-    estado: props.billing.estado,
-    notas: props.billing.notas,
-  };
-}
+const initializeFormWithBilling = () => {
+  if (props.billing) {
+    // Convert billing date to YYYY-MM-DD format for date input
+    const billingDate = new Date(props.billing.mes + "-01");
+    form.value.fechaFacturacion = billingDate.toISOString().split("T")[0];
+    form.value.notas = props.billing.notas || "";
+
+    // Initialize items from billing data
+    if (props.billing.items && props.billing.items.length > 0) {
+      form.value.items = [...props.billing.items];
+    } else {
+      // If no items, create a single item with the total amount
+      form.value.items = [
+        {
+          descripcion: "Servicios generales",
+          monto: props.billing.montoFacturado,
+        },
+      ];
+    }
+  } else {
+    // Initialize with current date for new billing
+    form.value.fechaFacturacion = new Date().toISOString().split("T")[0];
+    form.value.items = [
+      {
+        descripcion: "",
+        monto: 0,
+      },
+    ];
+  }
+};
+
+// Initialize form on mount
+initializeFormWithBilling();
 </script>
 
 <style scoped>
