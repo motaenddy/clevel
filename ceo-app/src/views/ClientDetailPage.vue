@@ -27,79 +27,52 @@
         <!-- Client Information Card -->
         <ion-card>
           <ion-card-header>
-            <ion-card-title>Información del Cliente</ion-card-title>
+            <div class="card-header-content">
+              <ion-card-title>Información del Cliente</ion-card-title>
+              <ion-button
+                fill="clear"
+                @click="editClientInfo"
+                class="edit-button"
+              >
+                <ion-icon :icon="create" color="primary"></ion-icon>
+                Editar
+              </ion-button>
+            </div>
           </ion-card-header>
           <ion-card-content>
-            <ion-list>
-              <ion-item button @click="editField('nombre')">
-                <ion-label>
-                  <h3>Nombre</h3>
-                  <p>{{ client.nombre }}</p>
-                </ion-label>
-                <ion-icon slot="end" :icon="create" color="medium"></ion-icon>
-              </ion-item>
+            <div class="client-info-compact">
+              <div class="info-line">
+                <span class="info-value">{{ client.nombre }}</span>
+              </div>
 
-              <ion-item v-if="client.email" button @click="editField('email')">
-                <ion-label>
-                  <h3>Email</h3>
-                  <p>{{ client.email }}</p>
-                </ion-label>
-                <ion-icon slot="end" :icon="create" color="medium"></ion-icon>
-              </ion-item>
+              <div v-if="client.email" class="info-line">
+                <span class="info-value">{{ client.email }}</span>
+              </div>
 
-              <ion-item
-                v-if="client.telefono"
-                button
-                @click="editField('telefono')"
-              >
-                <ion-label>
-                  <h3>Teléfono</h3>
-                  <p>{{ client.telefono }}</p>
-                </ion-label>
-                <ion-icon slot="end" :icon="create" color="medium"></ion-icon>
-              </ion-item>
+              <div v-if="client.telefono" class="info-line">
+                <span class="info-value">{{ client.telefono }}</span>
+              </div>
 
-              <ion-item
-                v-if="client.direccion"
-                button
-                @click="editField('direccion')"
-              >
-                <ion-label>
-                  <h3>Dirección</h3>
-                  <p>{{ client.direccion }}</p>
-                </ion-label>
-                <ion-icon slot="end" :icon="create" color="medium"></ion-icon>
-              </ion-item>
+              <div v-if="client.direccion" class="info-line">
+                <span class="info-value">{{ client.direccion }}</span>
+              </div>
 
-              <ion-item button @click="editField('estado')">
-                <ion-label>
-                  <h3>Estado</h3>
-                  <p>
-                    <ion-badge
-                      :color="client.estado === 'activo' ? 'success' : 'medium'"
-                    >
-                      {{ client.estado }}
-                    </ion-badge>
-                  </p>
-                </ion-label>
-                <ion-icon slot="end" :icon="create" color="medium"></ion-icon>
-              </ion-item>
-
-              <ion-item v-if="client.notas" button @click="editField('notas')">
-                <ion-label>
-                  <h3>Notas</h3>
-                  <p>{{ client.notas }}</p>
-                </ion-label>
-                <ion-icon slot="end" :icon="create" color="medium"></ion-icon>
-              </ion-item>
-            </ion-list>
+              <div v-if="client.notas" class="info-line">
+                <span class="info-value">{{ client.notas }}</span>
+              </div>
+            </div>
           </ion-card-content>
         </ion-card>
 
         <!-- Financial Summary Card -->
-        <ion-card>
+        <ion-card
+          button
+          @click="navigateToBillingHistory"
+          class="financial-summary-card"
+        >
           <ion-card-header>
             <ion-card-title>Resumen Financiero</ion-card-title>
+            <ion-icon slot="end" :icon="document" color="medium"></ion-icon>
           </ion-card-header>
           <ion-card-content>
             <ion-grid>
@@ -123,130 +96,6 @@
                 </ion-col>
               </ion-row>
             </ion-grid>
-          </ion-card-content>
-        </ion-card>
-
-        <!-- Billing History Cards -->
-        <ion-card>
-          <ion-card-header>
-            <ion-card-title>Historial de Facturación</ion-card-title>
-            <ion-button
-              slot="end"
-              fill="clear"
-              @click="showAddBillingModal = true"
-            >
-              <ion-icon :icon="add"></ion-icon>
-              Agregar Facturación
-            </ion-button>
-          </ion-card-header>
-          <ion-card-content>
-            <div v-if="billingHistory.length === 0" class="empty-state">
-              <ion-icon :icon="document" size="large"></ion-icon>
-              <p>No hay facturación registrada</p>
-              <ion-button @click="showAddBillingModal = true">
-                Agregar Primera Facturación
-              </ion-button>
-            </div>
-
-            <div v-else class="billing-cards-container">
-              <ion-card
-                v-for="billing in billingHistory"
-                :key="billing.id"
-                class="billing-card"
-                button
-                @click="editBilling(billing)"
-              >
-                <ion-card-content>
-                  <div class="billing-card-header">
-                    <h3>{{ formatMonth(billing.mes) }}</h3>
-                    <ion-badge :color="getStatusColor(billing.estado)">
-                      {{ getStatusLabel(billing.estado) }}
-                    </ion-badge>
-                  </div>
-
-                  <div class="billing-card-details">
-                    <div class="billing-amount">
-                      <span class="label">Facturado:</span>
-                      <span class="amount"
-                        >RD$
-                        {{
-                          billing.montoFacturado.toLocaleString("es-DO")
-                        }}</span
-                      >
-                    </div>
-
-                    <div class="billing-amount">
-                      <span class="label">Pagado:</span>
-                      <span class="amount paid"
-                        >RD$
-                        {{ billing.montoPagado.toLocaleString("es-DO") }}</span
-                      >
-                    </div>
-
-                    <div class="billing-amount">
-                      <span class="label">Pendiente:</span>
-                      <span class="amount pending"
-                        >RD$
-                        {{
-                          (
-                            billing.montoFacturado - billing.montoPagado
-                          ).toLocaleString("es-DO")
-                        }}</span
-                      >
-                    </div>
-                  </div>
-
-                  <div class="billing-card-footer">
-                    <ion-button
-                      v-if="billing.estado !== 'pagado'"
-                      fill="clear"
-                      size="small"
-                      @click.stop="markAsPaid(billing)"
-                    >
-                      <ion-icon :icon="checkmark"></ion-icon>
-                      Marcar como Pagado
-                    </ion-button>
-
-                    <ion-button
-                      v-if="billing.estado === 'vencido'"
-                      fill="clear"
-                      size="small"
-                      @click.stop="sendReminder(billing)"
-                    >
-                      <ion-icon :icon="mail"></ion-icon>
-                      Enviar Recordatorio
-                    </ion-button>
-                  </div>
-                </ion-card-content>
-              </ion-card>
-            </div>
-          </ion-card-content>
-        </ion-card>
-
-        <!-- Quick Actions -->
-        <ion-card>
-          <ion-card-header>
-            <ion-card-title>Acciones Rápidas</ion-card-title>
-          </ion-card-header>
-          <ion-card-content>
-            <ion-button
-              expand="block"
-              @click="markAsPaid"
-              :disabled="!hasPendingBilling"
-            >
-              <ion-icon :icon="checkmark" slot="start"></ion-icon>
-              Marcar como Pagado
-            </ion-button>
-
-            <ion-button
-              expand="block"
-              fill="outline"
-              @click="sendReminder"
-              :disabled="!hasOverdueBilling"
-            >
-              <ion-icon :icon="mail" slot="start"></ion-icon>
-              Enviar Recordatorio
-            </ion-button>
           </ion-card-content>
         </ion-card>
       </div>
@@ -297,47 +146,23 @@
       </ion-content>
     </ion-modal>
 
-    <!-- Add Billing Modal -->
+    <!-- Edit Client Modal -->
     <ion-modal
-      :is-open="showAddBillingModal"
-      @didDismiss="showAddBillingModal = false"
+      :is-open="showEditClientModal"
+      @didDismiss="showEditClientModal = false"
     >
       <ion-header>
         <ion-toolbar>
-          <ion-title>Agregar Facturación</ion-title>
+          <ion-title>Editar Cliente</ion-title>
           <ion-buttons slot="end">
-            <ion-button @click="showAddBillingModal = false"
+            <ion-button @click="showEditClientModal = false"
               >Cancelar</ion-button
             >
           </ion-buttons>
         </ion-toolbar>
       </ion-header>
       <ion-content>
-        <BillingForm :client-id="clientId" @billing-saved="onBillingAdded" />
-      </ion-content>
-    </ion-modal>
-
-    <!-- Edit Billing Modal -->
-    <ion-modal
-      :is-open="showEditBillingModal"
-      @didDismiss="showEditBillingModal = false"
-    >
-      <ion-header>
-        <ion-toolbar>
-          <ion-title>Editar Facturación</ion-title>
-          <ion-buttons slot="end">
-            <ion-button @click="showEditBillingModal = false"
-              >Cancelar</ion-button
-            >
-          </ion-buttons>
-        </ion-toolbar>
-      </ion-header>
-      <ion-content>
-        <BillingForm
-          :client-id="clientId"
-          :billing="selectedBilling"
-          @billing-saved="onBillingUpdated"
-        />
+        <ClientForm :client="editingClient" @client-saved="onClientUpdated" />
       </ion-content>
     </ion-modal>
   </ion-page>
@@ -358,23 +183,18 @@ import {
   IonCardHeader,
   IonCardTitle,
   IonCardContent,
-  IonList,
-  IonItem,
-  IonLabel,
-  IonNote,
-  IonBadge,
   IonGrid,
   IonRow,
   IonCol,
   IonModal,
   IonSpinner,
 } from "@ionic/vue";
-import { create, alert, add, document, checkmark } from "ionicons/icons";
+import { create, alert, document } from "ionicons/icons";
 import { ref, computed, onMounted } from "vue";
 import { useRoute, useRouter } from "vue-router";
 import { useClientsStore } from "../stores/clients";
 import { useBillingStore } from "../stores/billing";
-import BillingForm from "../components/BillingForm.vue";
+import ClientForm from "../components/ClientForm.vue";
 
 // Route and router
 const route = useRoute();
@@ -387,11 +207,10 @@ const billingStore = useBillingStore();
 // Reactive data
 const loading = ref(true);
 const showEditFieldModal = ref(false);
-const showAddBillingModal = ref(false);
-const showEditBillingModal = ref(false);
+const showEditClientModal = ref(false);
 const editingField = ref("");
 const editingValue = ref("");
-const selectedBilling = ref(null);
+const editingClient = ref(null);
 
 // Computed properties
 const clientId = computed(() => route.params.id as string);
@@ -408,70 +227,7 @@ const client = computed(() => {
   };
 });
 
-const billingHistory = computed(() => {
-  const history = billingStore.getBillingByClient(clientId.value);
-  console.log("Billing history for client", clientId.value, ":", history);
-  console.log("All billing data:", billingStore.billing);
-  return history;
-});
-
-const hasPendingBilling = computed(() =>
-  billingHistory.value.some((b) => b.estado === "pendiente")
-);
-
-const hasOverdueBilling = computed(() =>
-  billingHistory.value.some((b) => b.estado === "vencido")
-);
-
 // Methods
-const formatMonth = (month: string) => {
-  const [year, monthNum] = month.split("-");
-  const date = new Date(parseInt(year), parseInt(monthNum) - 1);
-  return date.toLocaleDateString("es-ES", {
-    year: "numeric",
-    month: "long",
-  });
-};
-
-const getStatusColor = (status: string) => {
-  switch (status) {
-    case "pagado":
-      return "success";
-    case "pendiente":
-      return "warning";
-    case "vencido":
-      return "danger";
-    default:
-      return "medium";
-  }
-};
-
-const getStatusLabel = (status: string) => {
-  const labels: { [key: string]: string } = {
-    pagado: "Pagado",
-    pendiente: "Pendiente",
-    vencido: "Vencido",
-  };
-  return labels[status] || status;
-};
-
-const sendEmail = () => {
-  if (client.value?.email) {
-    window.open(`mailto:${client.value.email}`, "_blank");
-  }
-};
-
-const callClient = () => {
-  if (client.value?.telefono) {
-    window.open(`tel:${client.value.telefono}`, "_blank");
-  }
-};
-
-const editField = (field: string) => {
-  editingField.value = field;
-  editingValue.value = client.value?.[field] || "";
-  showEditFieldModal.value = true;
-};
 
 const getFieldLabel = (field: string) => {
   const labels: { [key: string]: string } = {
@@ -521,37 +277,22 @@ const saveField = async () => {
   }
 };
 
-const editBilling = (billing: any) => {
-  selectedBilling.value = billing;
-  showEditBillingModal.value = true;
+const navigateToBillingHistory = () => {
+  router.push(`/client/${clientId.value}/billing`);
 };
 
-const markAsPaid = () => {
-  // TODO: Implement mark as paid functionality
-  console.log("Mark as paid clicked");
+const editClientInfo = () => {
+  editingClient.value = { ...client.value };
+  showEditClientModal.value = true;
 };
 
-const sendReminder = () => {
-  // TODO: Implement send reminder functionality
-  console.log("Send reminder clicked");
-};
-
-const onBillingAdded = async (newBilling: any) => {
+const onClientUpdated = async (updatedClient: any) => {
   try {
-    await billingStore.addBilling(newBilling);
-    showAddBillingModal.value = false;
+    await clientsStore.updateClient(updatedClient);
+    showEditClientModal.value = false;
+    editingClient.value = null;
   } catch (error) {
-    console.error("Error adding billing:", error);
-  }
-};
-
-const onBillingUpdated = async (updatedBilling: any) => {
-  try {
-    await billingStore.updateBilling(updatedBilling);
-    showEditBillingModal.value = false;
-    selectedBilling.value = null;
-  } catch (error) {
-    console.error("Error updating billing:", error);
+    console.error("Error updating client:", error);
   }
 };
 
@@ -722,5 +463,49 @@ ion-item[button]:hover {
   justify-content: flex-end;
   border-top: 1px solid var(--ion-color-light);
   padding-top: 12px;
+}
+
+.client-info-compact {
+  padding: 8px 0;
+}
+
+.info-line {
+  margin-bottom: 12px;
+  line-height: 1.4;
+}
+
+.info-line:last-child {
+  margin-bottom: 0;
+}
+
+.info-value {
+  font-size: 1rem;
+  color: var(--ion-color-dark);
+  display: block;
+}
+
+.card-header-content {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  width: 100%;
+}
+
+.edit-button {
+  --padding-start: 12px;
+  --padding-end: 12px;
+  min-width: 80px;
+  height: 36px;
+  font-size: 0.9rem;
+}
+
+.financial-summary-card {
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.financial-summary-card:hover {
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  transform: translateY(-2px);
 }
 </style>
