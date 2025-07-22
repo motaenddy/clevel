@@ -1,6 +1,7 @@
 import { defineStore } from 'pinia'
 import { ref, computed } from 'vue'
 import { storageService, type Client } from '../services/StorageService'
+import { useBillingStore } from './billing'
 
 export const useClientsStore = defineStore('clients', () => {
   // State
@@ -23,24 +24,50 @@ export const useClientsStore = defineStore('clients', () => {
     clients.value.find(client => client.id === id)
   )
 
+  // Dynamic calculations based on billing data
+  const getClientFinancialSummary = computed(() => (clientId: string) => {
+    const billingStore = useBillingStore()
+    const clientBilling = billingStore.getBillingByClient(clientId)
+    
+    const totalFacturado = clientBilling.reduce((sum, billing) => sum + billing.montoFacturado, 0)
+    const totalPagado = clientBilling.reduce((sum, billing) => sum + billing.montoPagado, 0)
+    const montoPendiente = totalFacturado - totalPagado
+    const cuotasVencidas = clientBilling.filter(billing => billing.estado === 'vencido').length
+    
+    return {
+      totalFacturado,
+      totalPagado,
+      montoPendiente,
+      cuotasVencidas
+    }
+  })
+
+  const getClientsWithFinancialData = computed(() => {
+    return clients.value.map(client => {
+      const financial = getClientFinancialSummary.value(client.id)
+      return {
+        ...client,
+        montoPendiente: financial.montoPendiente,
+        cuotasVencidas: financial.cuotasVencidas
+      }
+    })
+  })
+
   // Actions
   const loadClients = async () => {
     loading.value = true
     error.value = null
     
     try {
-      const loadedClients = storageService.loadClients()
-      
-      // If no clients in storage, load sample data
-      if (loadedClients.length === 0) {
-        clients.value = getSampleClients()
-        await saveClients()
-      } else {
-        clients.value = loadedClients
-      }
+      // Always clear localStorage and use fresh sample data
+      storageService.clearAllData()
+      clients.value = getSampleClients()
+      await saveClients()
     } catch (err) {
       error.value = 'Error al cargar clientes'
       console.error('Error loading clients:', err)
+      // Fallback to sample data
+      clients.value = getSampleClients()
     } finally {
       loading.value = false
     }
@@ -150,39 +177,15 @@ export const useClientsStore = defineStore('clients', () => {
       },
       {
         id: '3',
-        nombre: 'GRUPO MEDICO UNIDO',
-        email: 'contacto@grupomedico.com',
-        telefono: '809-555-0103',
-        direccion: 'La Romana, RD',
-        estado: 'activo',
-        notas: 'Nuevo cliente',
-        montoPendiente: 60000,
-        cuotasVencidas: 10,
-        fechaCreacion: new Date('2024-02-01')
-      },
-      {
-        id: '4',
         nombre: 'CLINICA DR MONTESINO',
         email: 'dr.montesino@clinica.com',
         telefono: '809-555-0104',
         direccion: 'San Pedro de Macorís, RD',
-        estado: 'activo',
-        notas: 'Cliente estable',
-        montoPendiente: 33898,
-        cuotasVencidas: 8,
-        fechaCreacion: new Date('2024-02-15')
-      },
-      {
-        id: '5',
-        nombre: 'Hospital San Vicente de Paul',
-        email: 'admin@sanvicente.com',
-        telefono: '809-555-0105',
-        direccion: 'San Francisco de Macorís, RD',
-        estado: 'activo',
-        notas: 'Hospital grande',
-        montoPendiente: 120000,
+        estado: 'inactivo',
+        notas: 'Cliente cancelado',
+        montoPendiente: 0,
         cuotasVencidas: 0,
-        fechaCreacion: new Date('2024-03-01')
+        fechaCreacion: new Date('2024-02-15')
       }
     ]
   }
@@ -198,6 +201,8 @@ export const useClientsStore = defineStore('clients', () => {
     overdueClients,
     totalClients,
     getClientById,
+    getClientFinancialSummary,
+    getClientsWithFinancialData,
     
     // Actions
     loadClients,

@@ -48,18 +48,14 @@ export const useBillingStore = defineStore('billing', () => {
     error.value = null
     
     try {
-      const loadedBilling = storageService.loadBilling()
-      
-      // If no billing in storage, load sample data
-      if (loadedBilling.length === 0) {
-        billing.value = getSampleBilling()
-        await saveBilling()
-      } else {
-        billing.value = loadedBilling
-      }
+      // Always use fresh sample data (localStorage is cleared in clients store)
+      billing.value = getSampleBilling()
+      await saveBilling()
     } catch (err) {
       error.value = 'Error al cargar facturación'
       console.error('Error loading billing:', err)
+      // Fallback to sample data
+      billing.value = getSampleBilling()
     } finally {
       loading.value = false
     }
@@ -163,10 +159,8 @@ export const useBillingStore = defineStore('billing', () => {
   }
 
   const getSampleBilling = (): MonthlyBilling[] => {
-    const currentDate = new Date()
-    const lastMonth = new Date(currentDate.getFullYear(), currentDate.getMonth() - 1, 1)
-    
     return [
+      // CENTRO MEDICO CAROLINA DE JESUS (Cliente 1) - 4 facturas de 40,000
       {
         id: '1',
         clienteId: '1',
@@ -178,59 +172,115 @@ export const useBillingStore = defineStore('billing', () => {
         cuotasVencidas: 15,
         fechaCompromiso: null,
         estado: 'vencido',
-        notas: 'Cliente con múltiples cuotas vencidas'
+        notas: 'Primera facturación del año'
       },
       {
         id: '2',
+        clienteId: '1',
+        mes: '2024-02',
+        montoFacturado: 40000,
+        montoPagado: 20000,
+        fechaUltimoPago: new Date('2024-02-15'),
+        fechaVencimiento: new Date('2024-02-29'),
+        cuotasVencidas: 8,
+        fechaCompromiso: new Date('2024-07-15'),
+        estado: 'pendiente',
+        notas: 'Pago parcial realizado'
+      },
+      {
+        id: '3',
+        clienteId: '1',
+        mes: '2024-03',
+        montoFacturado: 40000,
+        montoPagado: 40000,
+        fechaUltimoPago: new Date('2024-03-10'),
+        fechaVencimiento: new Date('2024-03-31'),
+        cuotasVencidas: 0,
+        fechaCompromiso: null,
+        estado: 'pagado',
+        notas: 'Pago completo realizado'
+      },
+      {
+        id: '4',
+        clienteId: '1',
+        mes: '2024-04',
+        montoFacturado: 40000,
+        montoPagado: 0,
+        fechaUltimoPago: null,
+        fechaVencimiento: new Date('2024-04-30'),
+        cuotasVencidas: 5,
+        fechaCompromiso: new Date('2024-07-20'),
+        estado: 'pendiente',
+        notas: 'Pendiente de pago'
+      },
+      
+      // INEMED (Cliente 2) - 2 facturas de 60,000
+      {
+        id: '5',
         clienteId: '2',
         mes: '2024-01',
-        montoFacturado: 45000,
+        montoFacturado: 60000,
         montoPagado: 0,
         fechaUltimoPago: null,
         fechaVencimiento: new Date('2024-01-31'),
         cuotasVencidas: 22,
         fechaCompromiso: new Date('2024-07-08'),
         estado: 'vencido',
-        notas: 'Fecha de compromiso establecida'
+        notas: 'Cliente con múltiples cuotas vencidas'
       },
       {
-        id: '3',
+        id: '6',
+        clienteId: '2',
+        mes: '2024-02',
+        montoFacturado: 60000,
+        montoPagado: 60000,
+        fechaUltimoPago: new Date('2024-02-20'),
+        fechaVencimiento: new Date('2024-02-29'),
+        cuotasVencidas: 0,
+        fechaCompromiso: null,
+        estado: 'pagado',
+        notas: 'Pago completo realizado'
+      },
+      
+      // CLINICA DR MONTESINO (Cliente 3) - 3 facturas de 50,000
+      {
+        id: '7',
         clienteId: '3',
         mes: '2024-01',
-        montoFacturado: 60000,
+        montoFacturado: 50000,
         montoPagado: 0,
         fechaUltimoPago: null,
         fechaVencimiento: new Date('2024-01-31'),
         cuotasVencidas: 10,
         fechaCompromiso: new Date('2024-07-06'),
         estado: 'vencido',
-        notas: 'Cliente con compromiso de pago'
+        notas: 'Cliente cancelado - factura vencida'
       },
       {
-        id: '4',
-        clienteId: '4',
-        mes: '2024-01',
-        montoFacturado: 33898,
+        id: '8',
+        clienteId: '3',
+        mes: '2024-02',
+        montoFacturado: 50000,
         montoPagado: 0,
         fechaUltimoPago: null,
-        fechaVencimiento: new Date('2024-01-31'),
+        fechaVencimiento: new Date('2024-02-29'),
         cuotasVencidas: 8,
-        fechaCompromiso: new Date('2024-07-09'),
+        fechaCompromiso: null,
         estado: 'vencido',
-        notas: 'Cliente estable'
+        notas: 'Cliente cancelado - factura vencida'
       },
       {
-        id: '5',
-        clienteId: '5',
-        mes: '2024-01',
-        montoFacturado: 120000,
-        montoPagado: 120000,
-        fechaUltimoPago: new Date('2024-01-15'),
-        fechaVencimiento: new Date('2024-01-31'),
-        cuotasVencidas: 0,
+        id: '9',
+        clienteId: '3',
+        mes: '2024-03',
+        montoFacturado: 50000,
+        montoPagado: 0,
+        fechaUltimoPago: null,
+        fechaVencimiento: new Date('2024-03-31'),
+        cuotasVencidas: 6,
         fechaCompromiso: null,
-        estado: 'pagado',
-        notas: 'Pago completo realizado'
+        estado: 'vencido',
+        notas: 'Cliente cancelado - factura vencida'
       }
     ]
   }
@@ -259,4 +309,4 @@ export const useBillingStore = defineStore('billing', () => {
     markAsPaid,
     saveBilling
   }
-}) 
+})

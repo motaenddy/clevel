@@ -126,7 +126,7 @@
           </ion-card-content>
         </ion-card>
 
-        <!-- Billing History Card -->
+        <!-- Billing History Cards -->
         <ion-card>
           <ion-card-header>
             <ion-card-title>Historial de Facturación</ion-card-title>
@@ -148,26 +148,78 @@
               </ion-button>
             </div>
 
-            <ion-list v-else>
-              <ion-item v-for="billing in billingHistory" :key="billing.id">
-                <ion-label>
-                  <h3>{{ formatMonth(billing.mes) }}</h3>
-                  <p>
-                    Facturado: RD$
-                    {{ billing.montoFacturado.toLocaleString("es-DO") }}
-                  </p>
-                  <p>
-                    Pagado: RD$
-                    {{ billing.montoPagado.toLocaleString("es-DO") }}
-                  </p>
-                </ion-label>
-                <ion-note slot="end">
-                  <ion-badge :color="getStatusColor(billing.estado)">
-                    {{ billing.estado }}
-                  </ion-badge>
-                </ion-note>
-              </ion-item>
-            </ion-list>
+            <div v-else class="billing-cards-container">
+              <ion-card
+                v-for="billing in billingHistory"
+                :key="billing.id"
+                class="billing-card"
+                button
+                @click="editBilling(billing)"
+              >
+                <ion-card-content>
+                  <div class="billing-card-header">
+                    <h3>{{ formatMonth(billing.mes) }}</h3>
+                    <ion-badge :color="getStatusColor(billing.estado)">
+                      {{ getStatusLabel(billing.estado) }}
+                    </ion-badge>
+                  </div>
+
+                  <div class="billing-card-details">
+                    <div class="billing-amount">
+                      <span class="label">Facturado:</span>
+                      <span class="amount"
+                        >RD$
+                        {{
+                          billing.montoFacturado.toLocaleString("es-DO")
+                        }}</span
+                      >
+                    </div>
+
+                    <div class="billing-amount">
+                      <span class="label">Pagado:</span>
+                      <span class="amount paid"
+                        >RD$
+                        {{ billing.montoPagado.toLocaleString("es-DO") }}</span
+                      >
+                    </div>
+
+                    <div class="billing-amount">
+                      <span class="label">Pendiente:</span>
+                      <span class="amount pending"
+                        >RD$
+                        {{
+                          (
+                            billing.montoFacturado - billing.montoPagado
+                          ).toLocaleString("es-DO")
+                        }}</span
+                      >
+                    </div>
+                  </div>
+
+                  <div class="billing-card-footer">
+                    <ion-button
+                      v-if="billing.estado !== 'pagado'"
+                      fill="clear"
+                      size="small"
+                      @click.stop="markAsPaid(billing)"
+                    >
+                      <ion-icon :icon="checkmark"></ion-icon>
+                      Marcar como Pagado
+                    </ion-button>
+
+                    <ion-button
+                      v-if="billing.estado === 'vencido'"
+                      fill="clear"
+                      size="small"
+                      @click.stop="sendReminder(billing)"
+                    >
+                      <ion-icon :icon="mail"></ion-icon>
+                      Enviar Recordatorio
+                    </ion-button>
+                  </div>
+                </ion-card-content>
+              </ion-card>
+            </div>
           </ion-card-content>
         </ion-card>
 
@@ -198,13 +250,6 @@
           </ion-card-content>
         </ion-card>
       </div>
-
-      <!-- Floating Action Button -->
-      <ion-fab vertical="bottom" horizontal="end" slot="fixed">
-        <ion-fab-button @click="navigateToBilling" color="primary">
-          <ion-icon :icon="card"></ion-icon>
-        </ion-fab-button>
-      </ion-fab>
     </ion-content>
 
     <!-- Edit Field Modal -->
@@ -299,10 +344,8 @@ import {
   IonCol,
   IonModal,
   IonSpinner,
-  IonFab,
-  IonFabButton,
 } from "@ionic/vue";
-import { create, alert, add, document, checkmark, card } from "ionicons/icons";
+import { create, alert, add, document, checkmark } from "ionicons/icons";
 import { ref, computed, onMounted } from "vue";
 import { useRoute, useRouter } from "vue-router";
 import { useClientsStore } from "../stores/clients";
@@ -326,10 +369,25 @@ const editingValue = ref("");
 
 // Computed properties
 const clientId = computed(() => route.params.id as string);
-const client = computed(() => clientsStore.getClientById(clientId.value));
-const billingHistory = computed(() =>
-  billingStore.getBillingByClient(clientId.value)
-);
+const client = computed(() => {
+  const baseClient = clientsStore.getClientById(clientId.value);
+  if (!baseClient) return null;
+
+  // Get dynamic financial data
+  const financial = clientsStore.getClientFinancialSummary(clientId.value);
+  return {
+    ...baseClient,
+    montoPendiente: financial.montoPendiente,
+    cuotasVencidas: financial.cuotasVencidas,
+  };
+});
+
+const billingHistory = computed(() => {
+  const history = billingStore.getBillingByClient(clientId.value);
+  console.log("Billing history for client", clientId.value, ":", history);
+  console.log("All billing data:", billingStore.billing);
+  return history;
+});
 
 const hasPendingBilling = computed(() =>
   billingHistory.value.some((b) => b.estado === "pendiente")
@@ -360,6 +418,15 @@ const getStatusColor = (status: string) => {
     default:
       return "medium";
   }
+};
+
+const getStatusLabel = (status: string) => {
+  const labels: { [key: string]: string } = {
+    pagado: "Pagado",
+    pendiente: "Pendiente",
+    vencido: "Vencido",
+  };
+  return labels[status] || status;
 };
 
 const sendEmail = () => {
@@ -433,10 +500,6 @@ const markAsPaid = () => {
   console.log("Mark as paid clicked");
 };
 
-const navigateToBilling = () => {
-  router.push(`/client/${clientId.value}/billing`);
-};
-
 const sendReminder = () => {
   // TODO: Implement send reminder functionality
   console.log("Send reminder clicked");
@@ -454,7 +517,11 @@ const onBillingAdded = async (newBilling: any) => {
 // Load data on mount
 onMounted(async () => {
   try {
-    await Promise.all([clientsStore.loadClients(), billingStore.loadBilling()]);
+    console.log("Loading data...");
+    await clientsStore.loadClients();
+    console.log("Clients loaded");
+    await billingStore.loadBilling();
+    console.log("Billing loaded");
   } catch (error) {
     console.error("Error loading data:", error);
   } finally {
@@ -547,5 +614,72 @@ ion-item[button] {
 
 ion-item[button]:hover {
   background-color: var(--ion-color-light);
+}
+
+.billing-cards-container {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.billing-card {
+  margin: 0;
+  border: 1px solid var(--ion-color-light);
+  transition: all 0.2s ease;
+}
+
+.billing-card:hover {
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  transform: translateY(-2px);
+}
+
+.billing-card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 16px;
+}
+
+.billing-card-header h3 {
+  margin: 0;
+  font-weight: 600;
+  color: var(--ion-color-dark);
+}
+
+.billing-card-details {
+  margin-bottom: 16px;
+}
+
+.billing-amount {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 8px;
+}
+
+.billing-amount .label {
+  font-weight: 500;
+  color: var(--ion-color-medium);
+}
+
+.billing-amount .amount {
+  font-weight: 600;
+  color: var(--ion-color-dark);
+}
+
+.billing-amount .amount.paid {
+  color: var(--ion-color-success);
+}
+
+.billing-amount .amount.pending {
+  color: var(--ion-color-warning);
+}
+
+.billing-card-footer {
+  display: flex;
+  gap: 8px;
+  justify-content: flex-end;
+  border-top: 1px solid var(--ion-color-light);
+  padding-top: 12px;
 }
 </style>

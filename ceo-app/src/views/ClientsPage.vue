@@ -31,14 +31,14 @@
 
         <!-- Filter Chips -->
         <ion-segment v-model="selectedFilter" @ionChange="filterClients">
-          <ion-segment-button value="all">
-            <ion-label>Todos</ion-label>
-          </ion-segment-button>
           <ion-segment-button value="active">
             <ion-label>Activos</ion-label>
           </ion-segment-button>
-          <ion-segment-button value="overdue">
-            <ion-label>Vencidos</ion-label>
+          <ion-segment-button value="inactive">
+            <ion-label>Cancelados</ion-label>
+          </ion-segment-button>
+          <ion-segment-button value="all">
+            <ion-label>Todos</ion-label>
           </ion-segment-button>
         </ion-segment>
 
@@ -175,7 +175,7 @@ const billingStore = useBillingStore();
 
 // Reactive data
 const searchTerm = ref("");
-const selectedFilter = ref("all");
+const selectedFilter = ref("active");
 const showAddClientModal = ref(false);
 const showBillingModal = ref(false);
 const selectedClientForBilling = ref(null);
@@ -184,7 +184,8 @@ const router = useRouter();
 
 // Computed properties
 const filteredClients = computed(() => {
-  let filtered = clientsStore.clients;
+  // Use clients with dynamic financial data
+  let filtered = clientsStore.getClientsWithFinancialData;
 
   // Filter by search term
   if (searchTerm.value) {
@@ -198,8 +199,8 @@ const filteredClients = computed(() => {
   // Filter by status
   if (selectedFilter.value === "active") {
     filtered = filtered.filter((cliente) => cliente.estado === "activo");
-  } else if (selectedFilter.value === "overdue") {
-    filtered = filtered.filter((cliente) => (cliente.cuotasVencidas || 0) > 0);
+  } else if (selectedFilter.value === "inactive") {
+    filtered = filtered.filter((cliente) => cliente.estado === "inactivo");
   }
 
   return filtered;

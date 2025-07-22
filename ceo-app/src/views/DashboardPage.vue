@@ -120,7 +120,11 @@ const totalPagado = computed(() => billingStore.totalPaid);
 const porcentajeLogrado = computed(() => billingStore.paymentPercentage);
 
 // Computed properties for overdue clients
-const clientesVencidos = computed(() => clientsStore.overdueClients);
+const clientesVencidos = computed(() =>
+  clientsStore.getClientsWithFinancialData.filter(
+    (cliente) => cliente.cuotasVencidas > 0
+  )
+);
 
 // Load data on mount
 onMounted(async () => {
