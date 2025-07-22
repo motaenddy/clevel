@@ -60,6 +60,14 @@
               <p v-if="cliente.montoPendiente > 0" class="pending-amount">
                 Pendiente: RD$ {{ formatCurrency(cliente.montoPendiente) }}
               </p>
+              <ion-chip
+                color="primary"
+                @click.stop="quickBillClient(cliente)"
+                class="quick-bill-chip"
+              >
+                <ion-icon :icon="card"></ion-icon>
+                <ion-label>Facturar</ion-label>
+              </ion-chip>
             </ion-label>
 
             <ion-note slot="end">
@@ -104,6 +112,30 @@
         <ClientForm @client-saved="onClientSaved" />
       </ion-content>
     </ion-modal>
+
+    <!-- Quick Billing Modal -->
+    <ion-modal
+      :is-open="showBillingModal"
+      @didDismiss="showBillingModal = false"
+    >
+      <ion-header>
+        <ion-toolbar>
+          <ion-title
+            >Facturar - {{ selectedClientForBilling?.nombre }}</ion-title
+          >
+          <ion-buttons slot="end">
+            <ion-button @click="showBillingModal = false">Cancelar</ion-button>
+          </ion-buttons>
+        </ion-toolbar>
+      </ion-header>
+      <ion-content>
+        <BillingForm
+          v-if="selectedClientForBilling"
+          :client-id="selectedClientForBilling.id"
+          @billing-saved="onBillingSaved"
+        />
+      </ion-content>
+    </ion-modal>
   </ion-page>
 </template>
 
@@ -127,20 +159,26 @@ import {
   IonAvatar,
   IonNote,
   IonModal,
+  IonChip,
 } from "@ionic/vue";
-import { add, business, people } from "ionicons/icons";
+import { add, business, people, card } from "ionicons/icons";
 import { ref, computed, onMounted } from "vue";
 import { useRouter } from "vue-router";
 import { useClientsStore } from "../stores/clients";
+import { useBillingStore } from "../stores/billing";
 import ClientForm from "../components/ClientForm.vue";
+import BillingForm from "../components/BillingForm.vue";
 
-// Store
+// Stores
 const clientsStore = useClientsStore();
+const billingStore = useBillingStore();
 
 // Reactive data
 const searchTerm = ref("");
 const selectedFilter = ref("all");
 const showAddClientModal = ref(false);
+const showBillingModal = ref(false);
+const selectedClientForBilling = ref(null);
 
 const router = useRouter();
 
@@ -177,12 +215,28 @@ const viewClientDetail = (cliente: any) => {
   router.push(`/client/${cliente.id}`);
 };
 
+const quickBillClient = (cliente: any) => {
+  // Store the selected client for billing
+  selectedClientForBilling.value = cliente;
+  showBillingModal.value = true;
+};
+
 const onClientSaved = async (newClient: any) => {
   try {
     await clientsStore.addClient(newClient);
     showAddClientModal.value = false;
   } catch (error) {
     console.error("Error saving client:", error);
+  }
+};
+
+const onBillingSaved = async (billing: any) => {
+  try {
+    await billingStore.addBilling(billing);
+    showBillingModal.value = false;
+    selectedClientForBilling.value = null;
+  } catch (error) {
+    console.error("Error saving billing:", error);
   }
 };
 
@@ -230,6 +284,15 @@ onMounted(async () => {
 .status-badge.inactivo {
   background: var(--ion-color-medium);
   color: white;
+}
+
+.quick-bill-chip {
+  margin-top: 8px;
+  cursor: pointer;
+}
+
+.quick-bill-chip:hover {
+  opacity: 0.8;
 }
 
 .empty-state {
