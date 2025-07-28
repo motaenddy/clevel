@@ -79,10 +79,27 @@
               <ion-row>
                 <ion-col size="6">
                   <div class="financial-item">
+                    <h4>Total Facturado</h4>
+                    <p class="amount total">
+                      RD$ {{ totalFacturado.toLocaleString("es-DO") }}
+                    </p>
+                  </div>
+                </ion-col>
+                <ion-col size="6">
+                  <div class="financial-item">
+                    <h4>Total Pagado</h4>
+                    <p class="amount paid">
+                      RD$ {{ totalPagado.toLocaleString("es-DO") }}
+                    </p>
+                  </div>
+                </ion-col>
+              </ion-row>
+              <ion-row>
+                <ion-col size="6">
+                  <div class="financial-item">
                     <h4>Monto Pendiente</h4>
                     <p class="amount pending">
-                      RD$
-                      {{ (client.montoPendiente || 0).toLocaleString("es-DO") }}
+                      RD$ {{ montoPendiente.toLocaleString("es-DO") }}
                     </p>
                   </div>
                 </ion-col>
@@ -90,7 +107,7 @@
                   <div class="financial-item">
                     <h4>Cuotas Vencidas</h4>
                     <p class="amount overdue">
-                      {{ client.cuotasVencidas || 0 }}
+                      {{ cuotasVencidas }}
                     </p>
                   </div>
                 </ion-col>
@@ -98,7 +115,47 @@
             </ion-grid>
           </ion-card-content>
         </ion-card>
+
+        <!-- Negotiation Pipeline Card -->
+        <div v-if="clientNegotiation">
+          <NegotiationPipeline
+            :negotiation="clientNegotiation"
+            @update="onNegotiationUpdated"
+          />
+        </div>
+
+        <!-- No Negotiation Card -->
+        <ion-card v-else class="no-negotiation-card">
+          <ion-card-header>
+            <ion-card-title>
+              <ion-icon :icon="trendingUp" slot="start"></ion-icon>
+              Estado de Negociación
+            </ion-card-title>
+          </ion-card-header>
+          <ion-card-content>
+            <div class="no-negotiation-content">
+              <ion-icon
+                :icon="addCircle"
+                size="large"
+                color="medium"
+              ></ion-icon>
+              <h3>No hay negociación activa</h3>
+              <p>Inicia una nueva negociación para este cliente</p>
+              <ion-button @click="createNewNegotiation" fill="outline">
+                <ion-icon :icon="add" slot="start"></ion-icon>
+                Crear Negociación
+              </ion-button>
+            </div>
+          </ion-card-content>
+        </ion-card>
       </div>
+
+      <!-- Floating Action Button for Billing -->
+      <ion-fab vertical="bottom" horizontal="end" slot="fixed">
+        <ion-fab-button @click="openBillingModal">
+          <ion-icon :icon="card"></ion-icon>
+        </ion-fab-button>
+      </ion-fab>
     </ion-content>
 
     <!-- Edit Field Modal -->
@@ -165,6 +222,28 @@
         <ClientForm :client="editingClient" @client-saved="onClientUpdated" />
       </ion-content>
     </ion-modal>
+
+    <!-- Billing Modal -->
+    <ion-modal
+      :is-open="showBillingModal"
+      @didDismiss="showBillingModal = false"
+    >
+      <ion-header>
+        <ion-toolbar>
+          <ion-title>Facturar - {{ client?.nombre }}</ion-title>
+          <ion-buttons slot="end">
+            <ion-button @click="showBillingModal = false">Cancelar</ion-button>
+          </ion-buttons>
+        </ion-toolbar>
+      </ion-header>
+      <ion-content>
+        <BillingForm
+          v-if="client"
+          :client-id="client.id"
+          @billing-saved="onBillingSaved"
+        />
+      </ion-content>
+    </ion-modal>
   </ion-page>
 </template>
 
@@ -188,13 +267,27 @@ import {
   IonCol,
   IonModal,
   IonSpinner,
+  IonFab,
+  IonFabButton,
 } from "@ionic/vue";
-import { create, alert, document } from "ionicons/icons";
+import {
+  create,
+  alert,
+  document,
+  card,
+  trendingUp,
+  addCircle,
+  add,
+} from "ionicons/icons";
 import { ref, computed, onMounted } from "vue";
 import { useRoute, useRouter } from "vue-router";
 import { useClientsStore } from "../stores/clients";
 import { useBillingStore } from "../stores/billing";
 import ClientForm from "../components/ClientForm.vue";
+import BillingForm from "../components/BillingForm.vue";
+import NegotiationPipeline from "../components/NegotiationPipeline.vue";
+import { NegotiationService } from "../services/NegotiationService";
+import { Negotiation } from "../types/negotiation";
 
 // Route and router
 const route = useRoute();
@@ -208,9 +301,14 @@ const billingStore = useBillingStore();
 const loading = ref(true);
 const showEditFieldModal = ref(false);
 const showEditClientModal = ref(false);
+const showBillingModal = ref(false);
 const editingField = ref("");
 const editingValue = ref("");
 const editingClient = ref(null);
+
+// Negotiation service and data
+const negotiationService = new NegotiationService();
+const clientNegotiation = ref<Negotiation | null>(null);
 
 // Computed properties
 const clientId = computed(() => route.params.id as string);
@@ -226,6 +324,27 @@ const client = computed(() => {
     cuotasVencidas: financial.cuotasVencidas,
   };
 });
+
+// Financial summary computed properties
+const billingHistory = computed(() =>
+  billingStore.getBillingByClient(clientId.value)
+);
+
+const totalFacturado = computed(() =>
+  billingHistory.value.reduce((sum, billing) => sum + billing.montoFacturado, 0)
+);
+
+const totalPagado = computed(() =>
+  billingHistory.value.reduce((sum, billing) => sum + billing.montoPagado, 0)
+);
+
+const montoPendiente = computed(() => totalFacturado.value - totalPagado.value);
+
+const cuotasVencidas = computed(
+  () =>
+    billingHistory.value.filter((billing) => billing.estado === "vencido")
+      .length
+);
 
 // Methods
 
@@ -296,6 +415,63 @@ const onClientUpdated = async (updatedClient: any) => {
   }
 };
 
+const openBillingModal = () => {
+  showBillingModal.value = true;
+};
+
+const onBillingSaved = async (billing: any) => {
+  try {
+    await billingStore.addBilling(billing);
+    showBillingModal.value = false;
+  } catch (error) {
+    console.error("Error saving billing:", error);
+  }
+};
+
+// Negotiation methods
+const loadClientNegotiation = async () => {
+  if (!clientId.value) return;
+
+  try {
+    const negotiations = await negotiationService.getNegotiationsByClient(
+      clientId.value
+    );
+    // Get the most recent negotiation or create a new one
+    clientNegotiation.value = negotiations.length > 0 ? negotiations[0] : null;
+  } catch (error) {
+    console.error("Error loading client negotiation:", error);
+  }
+};
+
+const onNegotiationUpdated = async (updatedNegotiation: Negotiation) => {
+  try {
+    clientNegotiation.value = updatedNegotiation;
+  } catch (error) {
+    console.error("Error updating negotiation:", error);
+  }
+};
+
+const createNewNegotiation = async () => {
+  if (!clientId.value) return;
+
+  try {
+    const newNegotiation = await negotiationService.createNegotiation({
+      clientId: clientId.value,
+      currentStage: "contact",
+      startDate: new Date(),
+      notes: "Nueva negociación iniciada",
+      probability: 10,
+      estimatedValue: 0,
+      stages: [], // Will be set by the service
+      stageDates: { contact: new Date() }, // Fecha inicial para contacto
+    });
+
+    clientNegotiation.value = newNegotiation;
+  } catch (error) {
+    console.error("Error creating new negotiation:", error);
+  }
+};
+
 // Load data on mount
 onMounted(async () => {
   try {
@@ -304,6 +480,8 @@ onMounted(async () => {
     console.log("Clients loaded");
     await billingStore.loadBilling();
     console.log("Billing loaded");
+    await loadClientNegotiation();
+    console.log("Negotiation loaded");
   } catch (error) {
     console.error("Error loading data:", error);
   } finally {
@@ -342,6 +520,14 @@ onMounted(async () => {
   font-size: 1.2rem;
   font-weight: bold;
   margin: 0;
+}
+
+.amount.total {
+  color: var(--ion-color-primary);
+}
+
+.amount.paid {
+  color: var(--ion-color-success);
 }
 
 .amount.pending {
@@ -408,6 +594,28 @@ ion-item[button]:hover {
   margin: 0;
   border: 1px solid var(--ion-color-light);
   transition: all 0.2s ease;
+}
+
+.no-negotiation-card {
+  margin: 16px;
+}
+
+.no-negotiation-content {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  padding: 20px;
+}
+
+.no-negotiation-content h3 {
+  margin: 16px 0 8px 0;
+  color: var(--ion-color-medium);
+}
+
+.no-negotiation-content p {
+  margin: 0 0 20px 0;
+  color: var(--ion-color-medium);
 }
 
 .billing-card:hover {

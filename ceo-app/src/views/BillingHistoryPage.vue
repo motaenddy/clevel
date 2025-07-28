@@ -92,93 +92,108 @@
         </ion-card>
 
         <!-- Billing History -->
-        <ion-card>
-          <ion-card-header>
-            <ion-card-title>Historial de Facturación</ion-card-title>
-          </ion-card-header>
-          <ion-card-content>
-            <div v-if="billingHistory.length === 0" class="empty-state">
-              <ion-icon :icon="document" size="large"></ion-icon>
-              <p>No hay facturación registrada</p>
-              <ion-button @click="showAddBillingModal = true">
-                Agregar Primera Facturación
-              </ion-button>
-            </div>
+        <div class="billing-history-section">
+          <h2 class="section-title">Historial de Facturación</h2>
 
-            <div v-else class="billing-cards-container">
-              <ion-card
-                v-for="billing in billingHistory"
-                :key="billing.id"
-                class="billing-card"
-                button
-                @click="editBilling(billing)"
-              >
-                <ion-card-content>
-                  <div class="billing-card-header">
-                    <h3>{{ formatMonth(billing.mes) }}</h3>
+          <div v-if="billingHistory.length === 0" class="empty-state">
+            <ion-icon :icon="document" size="large"></ion-icon>
+            <p>No hay facturación registrada</p>
+            <ion-button @click="showAddBillingModal = true">
+              Agregar Primera Facturación
+            </ion-button>
+          </div>
+
+          <div v-else class="billing-cards-container">
+            <ion-card
+              v-for="billing in billingHistory"
+              :key="billing.id"
+              class="billing-card"
+              button
+              @click="editBilling(billing)"
+            >
+              <ion-card-content>
+                <div class="billing-card-header">
+                  <h3>{{ formatMonth(billing.mes) }}</h3>
+                  <div class="status-section">
                     <ion-badge :color="getStatusColor(billing.estado)">
                       {{ getStatusLabel(billing.estado) }}
                     </ion-badge>
-                  </div>
-
-                  <div class="billing-card-details">
-                    <div class="billing-amount">
-                      <span class="label">Facturado:</span>
-                      <span class="amount"
-                        >RD$
-                        {{
-                          billing.montoFacturado.toLocaleString("es-DO")
-                        }}</span
-                      >
-                    </div>
-
-                    <div class="billing-amount">
-                      <span class="label">Pagado:</span>
-                      <span class="amount paid"
-                        >RD$
-                        {{ billing.montoPagado.toLocaleString("es-DO") }}</span
-                      >
-                    </div>
-
-                    <div class="billing-amount">
-                      <span class="label">Pendiente:</span>
-                      <span class="amount pending"
-                        >RD$
-                        {{
-                          (
-                            billing.montoFacturado - billing.montoPagado
-                          ).toLocaleString("es-DO")
-                        }}</span
-                      >
-                    </div>
-                  </div>
-
-                  <div class="billing-card-footer">
                     <ion-button
-                      v-if="billing.estado !== 'pagado'"
                       fill="clear"
                       size="small"
-                      @click.stop="markAsPaid(billing)"
+                      @click.stop="editBilling(billing)"
+                      class="edit-status-button"
                     >
-                      <ion-icon :icon="checkmark"></ion-icon>
-                      Cobrar Factura
-                    </ion-button>
-
-                    <ion-button
-                      v-if="billing.estado === 'vencido'"
-                      fill="clear"
-                      size="small"
-                      @click.stop="sendReminder(billing)"
-                    >
-                      <ion-icon :icon="mail"></ion-icon>
-                      Enviar Recordatorio
+                      <ion-icon :icon="create" size="medium"></ion-icon>
                     </ion-button>
                   </div>
-                </ion-card-content>
-              </ion-card>
-            </div>
-          </ion-card-content>
-        </ion-card>
+                </div>
+
+                <div class="billing-card-details">
+                  <div class="billing-amount">
+                    <span class="label">Facturado:</span>
+                    <span class="amount"
+                      >RD$
+                      {{ billing.montoFacturado.toLocaleString("es-DO") }}</span
+                    >
+                  </div>
+
+                  <div class="billing-amount">
+                    <span class="label">Pagado:</span>
+                    <span class="amount paid"
+                      >RD$
+                      {{ billing.montoPagado.toLocaleString("es-DO") }}</span
+                    >
+                  </div>
+
+                  <div class="billing-amount">
+                    <span class="label">Pendiente:</span>
+                    <span class="amount pending"
+                      >RD$
+                      {{
+                        (
+                          billing.montoFacturado - billing.montoPagado
+                        ).toLocaleString("es-DO")
+                      }}</span
+                    >
+                  </div>
+                </div>
+
+                <div class="billing-card-footer">
+                  <ion-button
+                    v-if="billing.estado !== 'pagado'"
+                    fill="clear"
+                    size="small"
+                    @click.stop="markAsPaid(billing)"
+                  >
+                    <ion-icon :icon="checkmark"></ion-icon>
+                    Pago
+                  </ion-button>
+
+                  <ion-button
+                    fill="clear"
+                    size="small"
+                    color="primary"
+                    @click.stop="copyBilling(billing)"
+                  >
+                    <ion-icon :icon="copy"></ion-icon>
+                    Copiar
+                  </ion-button>
+
+                  <ion-button
+                    fill="clear"
+                    size="small"
+                    color="danger"
+                    @click.stop="deleteBilling(billing)"
+                  >
+                    <ion-icon :icon="trash"></ion-icon>
+                    Eliminar
+                  </ion-button>
+                </div>
+              </ion-card-content>
+            </ion-card>
+          </div>
+        </div>
       </div>
     </ion-content>
 
@@ -226,6 +241,72 @@
       </ion-content>
     </ion-modal>
 
+    <!-- Copy Billing Modal -->
+    <ion-modal
+      :is-open="showCopyBillingModal"
+      @didDismiss="showCopyBillingModal = false"
+    >
+      <ion-header>
+        <ion-toolbar>
+          <ion-title>Copiar Facturación</ion-title>
+          <ion-buttons slot="end">
+            <ion-button @click="showCopyBillingModal = false"
+              >Cancelar</ion-button
+            >
+          </ion-buttons>
+        </ion-toolbar>
+      </ion-header>
+      <ion-content>
+        <div class="copy-billing-container">
+          <ion-item>
+            <ion-label position="stacked"
+              >Fecha de la Nueva Facturación *</ion-label
+            >
+            <ion-input
+              v-model="newBillingDate"
+              type="date"
+              :min="new Date().toISOString().split('T')[0]"
+            ></ion-input>
+          </ion-item>
+
+          <div class="copy-preview">
+            <h4>Vista Previa de la Facturación a Copiar:</h4>
+            <div v-if="selectedBillingForCopy" class="preview-content">
+              <p>
+                <strong>Monto Facturado:</strong> RD$
+                {{
+                  selectedBillingForCopy.montoFacturado?.toLocaleString("es-DO")
+                }}
+              </p>
+              <p><strong>Items:</strong></p>
+              <ul>
+                <li
+                  v-for="(item, index) in selectedBillingForCopy.items"
+                  :key="index"
+                >
+                  {{ item.descripcion }} - RD$
+                  {{ item.monto?.toLocaleString("es-DO") }}
+                </li>
+              </ul>
+              <p v-if="selectedBillingForCopy.notas">
+                <strong>Notas:</strong> {{ selectedBillingForCopy.notas }}
+              </p>
+            </div>
+          </div>
+
+          <div class="copy-actions">
+            <ion-button
+              expand="block"
+              @click="confirmCopyBilling"
+              :disabled="!newBillingDate"
+            >
+              Crear Copia de Facturación
+            </ion-button>
+          </div>
+        </div>
+      </ion-content>
+    </ion-modal>
+
     <!-- Payment Modal -->
     <PaymentModal
       :is-open="showPaymentModal"
@@ -242,6 +323,25 @@
       :color="toastColor"
       duration="3000"
       @didDismiss="showToast = false"
+    />
+
+    <!-- Delete Confirmation Alert -->
+    <ion-alert
+      :is-open="showDeleteAlert"
+      header="Eliminar Facturación"
+      message="¿Estás seguro de que quieres eliminar esta facturación? Esta acción no se puede deshacer."
+      :buttons="[
+        {
+          text: 'Cancelar',
+          role: 'cancel',
+        },
+        {
+          text: 'Eliminar',
+          role: 'destructive',
+          handler: () => confirmDelete(),
+        },
+      ]"
+      @didDismiss="showDeleteAlert = false"
     />
   </ion-page>
 </template>
@@ -269,6 +369,7 @@ import {
   IonSpinner,
   IonAvatar,
   IonToast,
+  IonAlert,
 } from "@ionic/vue";
 import {
   alert,
@@ -277,6 +378,9 @@ import {
   checkmark,
   business,
   mail,
+  trash,
+  copy,
+  create,
 } from "ionicons/icons";
 import { ref, computed, onMounted } from "vue";
 import { useRoute } from "vue-router";
@@ -297,8 +401,13 @@ const loading = ref(true);
 const showAddBillingModal = ref(false);
 const showEditBillingModal = ref(false);
 const showPaymentModal = ref(false);
+const showDeleteAlert = ref(false);
+const showCopyBillingModal = ref(false);
 const selectedBilling = ref(null);
 const selectedBillingForPayment = ref(null);
+const selectedBillingForDelete = ref(null);
+const selectedBillingForCopy = ref(null);
+const newBillingDate = ref("");
 const showToast = ref(false);
 const toastMessage = ref("");
 const toastColor = ref("success");
@@ -383,6 +492,80 @@ const markAsPaid = (billing: any) => {
 const sendReminder = (billing: any) => {
   // TODO: Implement send reminder functionality
   console.log("Send reminder clicked for billing:", billing.id);
+};
+
+const deleteBilling = (billing: any) => {
+  selectedBillingForDelete.value = billing;
+  showDeleteAlert.value = true;
+};
+
+const confirmDelete = async () => {
+  try {
+    if (selectedBillingForDelete.value) {
+      await billingStore.deleteBilling(selectedBillingForDelete.value.id);
+
+      // Show success message
+      toastMessage.value = "Facturación eliminada exitosamente";
+      toastColor.value = "success";
+      showToast.value = true;
+
+      selectedBillingForDelete.value = null;
+    }
+  } catch (error) {
+    console.error("Error deleting billing:", error);
+
+    // Show error message
+    toastMessage.value = "Error al eliminar la facturación";
+    toastColor.value = "danger";
+    showToast.value = true;
+  }
+};
+
+const copyBilling = (billing: any) => {
+  selectedBillingForCopy.value = billing;
+  newBillingDate.value = new Date().toISOString().split("T")[0];
+  showCopyBillingModal.value = true;
+};
+
+const confirmCopyBilling = async () => {
+  try {
+    if (selectedBillingForCopy.value && newBillingDate.value) {
+      // Create a new billing based on the selected one
+      const newBilling = {
+        id: Date.now().toString(36) + Math.random().toString(36).substr(2),
+        clienteId: clientId.value,
+        mes: new Date(newBillingDate.value).toISOString().slice(0, 7), // YYYY-MM format
+        montoFacturado: selectedBillingForCopy.value.montoFacturado,
+        montoPagado: 0, // Reset payment amount for new billing
+        fechaUltimoPago: null,
+        fechaVencimiento: new Date(newBillingDate.value),
+        cuotasVencidas: 0,
+        fechaCompromiso: null,
+        estado: "pendiente", // Reset status to pending
+        notas: selectedBillingForCopy.value.notas,
+        items: selectedBillingForCopy.value.items
+          ? [...selectedBillingForCopy.value.items]
+          : [],
+      };
+
+      await billingStore.addBilling(newBilling);
+      showCopyBillingModal.value = false;
+      selectedBillingForCopy.value = null;
+      newBillingDate.value = "";
+
+      // Show success message
+      toastMessage.value = "Facturación copiada exitosamente";
+      toastColor.value = "success";
+      showToast.value = true;
+    }
+  } catch (error) {
+    console.error("Error copying billing:", error);
+
+    // Show error message
+    toastMessage.value = "Error al copiar la facturación";
+    toastColor.value = "danger";
+    showToast.value = true;
+  }
 };
 
 const onBillingAdded = async (newBilling: any) => {
@@ -500,6 +683,18 @@ onMounted(async () => {
   margin-bottom: 16px;
 }
 
+.billing-history-section {
+  margin-top: 24px;
+}
+
+.section-title {
+  margin: 0 0 16px 0;
+  font-size: 1.2rem;
+  font-weight: 600;
+  color: var(--ion-color-dark);
+  padding: 0 4px;
+}
+
 .financial-item {
   text-align: center;
   padding: 8px;
@@ -563,6 +758,24 @@ onMounted(async () => {
   color: var(--ion-color-dark);
 }
 
+.status-section {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.edit-status-button {
+  --padding-start: 4px;
+  --padding-end: 4px;
+  --color: var(--ion-color-medium);
+  min-width: 24px;
+  height: 24px;
+}
+
+.edit-status-button:hover {
+  --color: var(--ion-color-primary);
+}
+
 .billing-card-details {
   margin-bottom: 16px;
 }
@@ -596,8 +809,19 @@ onMounted(async () => {
   display: flex;
   gap: 8px;
   justify-content: flex-end;
+  align-items: center;
   border-top: 1px solid var(--ion-color-light);
   padding-top: 12px;
+}
+
+.billing-card-footer ion-button {
+  min-width: 80px;
+  max-width: 120px;
+  flex: 0 0 auto;
+}
+
+.billing-card-footer ion-button ion-icon {
+  margin-right: 6px;
 }
 
 .empty-state {
@@ -613,5 +837,41 @@ onMounted(async () => {
 .empty-state p {
   color: var(--ion-color-medium);
   margin-bottom: 16px;
+}
+
+.copy-billing-container {
+  padding: 16px;
+}
+
+.copy-preview {
+  margin: 24px 0;
+  padding: 16px;
+  background-color: var(--ion-color-light-tint);
+  border-radius: 8px;
+}
+
+.copy-preview h4 {
+  margin: 0 0 16px 0;
+  color: var(--ion-color-dark);
+  font-size: 1rem;
+}
+
+.preview-content p {
+  margin: 8px 0;
+  color: var(--ion-color-dark);
+}
+
+.preview-content ul {
+  margin: 8px 0;
+  padding-left: 20px;
+}
+
+.preview-content li {
+  margin: 4px 0;
+  color: var(--ion-color-dark);
+}
+
+.copy-actions {
+  margin-top: 24px;
 }
 </style>

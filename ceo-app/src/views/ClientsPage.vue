@@ -34,9 +34,6 @@
           <ion-segment-button value="active">
             <ion-label>Activos</ion-label>
           </ion-segment-button>
-          <ion-segment-button value="inactive">
-            <ion-label>Cancelados</ion-label>
-          </ion-segment-button>
           <ion-segment-button value="all">
             <ion-label>Todos</ion-label>
           </ion-segment-button>
