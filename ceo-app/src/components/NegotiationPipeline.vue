@@ -8,8 +8,97 @@
     </ion-card-header>
 
     <ion-card-content>
-      <!-- Pipeline Visual -->
-      <div class="pipeline-container">
+      <!-- Current Stage (Most Recent) - Only when collapsed -->
+      <div v-if="!isExpanded && currentStage" class="current-stage-container">
+        <div
+          class="stage-item"
+          :class="{
+            completed: isStageCompleted(currentStage.id),
+            current: isCurrentStage(currentStage.id),
+          }"
+          @click="selectStage(currentStage.id)"
+        >
+          <div
+            class="stage-icon"
+            :style="{ backgroundColor: currentStage.color }"
+          >
+            <ion-icon :icon="getIcon(currentStage.icon)"></ion-icon>
+          </div>
+          <div class="stage-info">
+            <h4>{{ currentStage.name }}</h4>
+            <p>{{ currentStage.description }}</p>
+            <div
+              v-if="getStageProgress(currentStage.id).total > 0"
+              class="stage-progress"
+            >
+              <span class="progress-text"
+                >{{ getStageProgress(currentStage.id).completed }}/{{
+                  getStageProgress(currentStage.id).total
+                }}
+                sub-etapas</span
+              >
+            </div>
+            <div
+              v-if="getLatestCompletedSubStage(currentStage.id)"
+              class="stage-date"
+            >
+              <ion-icon :icon="calendar" size="small"></ion-icon>
+              <span
+                >{{ getLatestCompletedSubStage(currentStage.id)?.name }} -
+                {{
+                  formatDate(
+                    getLatestCompletedSubStage(currentStage.id)?.completedDate!
+                  )
+                }}</span
+              >
+            </div>
+            <div
+              v-else-if="getStageProgress(currentStage.id).completed > 0"
+              class="stage-date"
+            >
+              <ion-icon :icon="calendar" size="small"></ion-icon>
+              <span
+                >{{ getStageProgress(currentStage.id).completed }}/{{
+                  getStageProgress(currentStage.id).total
+                }}
+                sub-etapas completadas</span
+              >
+            </div>
+          </div>
+          <div class="stage-status">
+            <ion-icon
+              v-if="isStageCompleted(currentStage.id)"
+              :icon="checkmarkCircle"
+              color="success"
+            ></ion-icon>
+            <ion-icon
+              v-else-if="isCurrentStage(currentStage.id)"
+              :icon="ellipse"
+              color="primary"
+            ></ion-icon>
+            <ion-icon v-else :icon="ellipseOutline" color="medium"></ion-icon>
+          </div>
+        </div>
+      </div>
+
+      <!-- Expand/Collapse Button -->
+      <div class="expand-button-container">
+        <ion-button
+          fill="clear"
+          size="small"
+          @click="toggleExpanded"
+          class="expand-button"
+        >
+          <ion-icon
+            :icon="isExpanded ? chevronUp : chevronDown"
+            slot="start"
+          ></ion-icon>
+          {{ isExpanded ? "Ver menos información" : "Ver más información" }}
+        </ion-button>
+      </div>
+
+      <!-- All Stages (Collapsible) -->
+      <div v-if="isExpanded" class="pipeline-container">
         <div
           v-for="stage in negotiation.stages"
           :key="stage.id"
@@ -77,52 +166,6 @@
           </div>
         </div>
       </div>
-
-      <!-- Información de la Negociación -->
-      <div class="negotiation-info">
-        <ion-grid>
-          <ion-row>
-            <ion-col size="6">
-              <div class="info-item">
-                <ion-label>Probabilidad</ion-label>
-                <ion-progress-bar
-                  :value="negotiation.probability / 100"
-                  :color="getProgressColor(negotiation.probability)"
-                ></ion-progress-bar>
-                <span class="progress-text"
-                  >{{ negotiation.probability }}%</span
-                >
-              </div>
-            </ion-col>
-            <ion-col size="6">
-              <div class="info-item">
-                <ion-label>Valor Estimado</ion-label>
-                <span class="value-text"
-                  >RD$ {{ formatCurrency(negotiation.estimatedValue) }}</span
-                >
-              </div>
-            </ion-col>
-          </ion-row>
-          <ion-row>
-            <ion-col size="6">
-              <div class="info-item">
-                <ion-label>Fecha Inicio</ion-label>
-                <span class="date-text">{{
-                  formatDate(negotiation.startDate)
-                }}</span>
-              </div>
-            </ion-col>
-            <ion-col size="6">
-              <div class="info-item">
-                <ion-label>Última Actualización</ion-label>
-                <span class="date-text">{{
-                  formatDate(negotiation.lastUpdate)
-                }}</span>
-              </div>
-            </ion-col>
-          </ion-row>
-        </ion-grid>
-      </div>
     </ion-card-content>
   </ion-card>
 </template>
@@ -134,10 +177,6 @@ import {
   IonCardTitle,
   IonCardContent,
   IonIcon,
-  IonGrid,
-  IonRow,
-  IonCol,
-  IonProgressBar,
 } from "@ionic/vue";
 import {
   trendingUp,
@@ -153,8 +192,10 @@ import {
   checkmarkDoneCircle,
   trendingUp as trendingUpIcon,
   calendar,
+  chevronDown,
+  chevronUp,
 } from "ionicons/icons";
-import { onMounted, onUnmounted } from "vue";
+import { ref, computed, onMounted, onUnmounted } from "vue";
 import { useRouter } from "vue-router";
 import { Negotiation } from "../types/negotiation";
 import { NegotiationService } from "../services/NegotiationService";
@@ -169,6 +210,22 @@ const emit = defineEmits<{
 
 const router = useRouter();
 const negotiationService = new NegotiationService();
+
+// State
+const isExpanded = ref(false);
+
+// Computed properties
+const currentStage = computed(() => {
+  // Obtener la etapa más reciente (completada o en progreso)
+  const stages = props.negotiation.stages;
+  for (let i = stages.length - 1; i >= 0; i--) {
+    const stage = stages[i];
+    if (isStageCompleted(stage.id) || isCurrentStage(stage.id)) {
+      return stage;
+    }
+  }
+  return stages[0]; // Si no hay etapas en progreso, mostrar la primera
+});
 
 // Methods
 const isStageCompleted = (stageId: string): boolean => {
@@ -271,16 +328,6 @@ const getIcon = (iconName: string) => {
   return iconMap[iconName] || person;
 };
 
-const getProgressColor = (probability: number): string => {
-  if (probability >= 80) return "success";
-  if (probability >= 50) return "warning";
-  return "danger";
-};
-
-const formatCurrency = (value: number): string => {
-  return value.toLocaleString("es-DO");
-};
-
 const formatDate = (date: Date): string => {
   return new Date(date).toLocaleDateString("es-DO");
 };
@@ -288,6 +335,10 @@ const formatDate = (date: Date): string => {
 const selectStage = (stageId: string) => {
   // Navegar a la vista de sub-etapas
   router.push(`/negotiation/${props.negotiation.id}/stage/${stageId}`);
+};
+
+const toggleExpanded = () => {
+  isExpanded.value = !isExpanded.value;
 };
 
 // Método para recargar datos cuando se regresa de la vista de sub-etapas
@@ -317,6 +368,23 @@ onUnmounted(() => {
 <style scoped>
 .negotiation-pipeline {
   margin: 16px;
+}
+
+.current-stage-container {
+  margin-bottom: 16px;
+}
+
+.expand-button-container {
+  display: flex;
+  justify-content: center;
+  margin: 16px 0;
+  border-top: 1px solid var(--ion-color-light);
+  padding-top: 16px;
+}
+
+.expand-button {
+  --color: var(--ion-color-primary);
+  font-size: 0.9rem;
 }
 
 .pipeline-container {
@@ -402,36 +470,5 @@ onUnmounted(() => {
 
 .stage-status {
   margin-left: 8px;
-}
-
-.negotiation-info {
-  margin: 20px 0;
-}
-
-.info-item {
-  margin-bottom: 16px;
-}
-
-.info-item ion-label {
-  font-size: 12px;
-  color: var(--ion-color-medium);
-  margin-bottom: 4px;
-}
-
-.progress-text {
-  font-size: 12px;
-  color: var(--ion-color-medium);
-  margin-top: 4px;
-}
-
-.value-text {
-  font-size: 16px;
-  font-weight: 600;
-  color: var(--ion-color-primary);
-}
-
-.date-text {
-  font-size: 12px;
-  color: var(--ion-color-medium);
 }
 </style>
