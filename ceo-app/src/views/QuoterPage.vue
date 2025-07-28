@@ -3,7 +3,12 @@
     <ion-header :translucent="true">
       <ion-toolbar>
         <ion-buttons slot="start">
-          <ion-menu-button></ion-menu-button>
+          <ion-back-button
+            v-if="openedFromClient"
+            @click="goBack"
+            :default-href="`/client/${route.query.clientId}`"
+          ></ion-back-button>
+          <ion-menu-button v-else></ion-menu-button>
         </ion-buttons>
         <ion-title>Cotizador</ion-title>
       </ion-toolbar>
@@ -289,6 +294,7 @@ import {
   IonTitle,
   IonButtons,
   IonMenuButton,
+  IonBackButton,
   IonContent,
   IonCard,
   IonCardHeader,
@@ -312,7 +318,8 @@ import {
   add,
   trash,
 } from "ionicons/icons";
-import { ref, computed } from "vue";
+import { ref, computed, onMounted } from "vue";
+import { useRoute, useRouter } from "vue-router";
 
 // Reactive data
 const clientName = ref("");
@@ -327,6 +334,10 @@ const additionalItems = ref<Array<{ id: number; name: string; value: number }>>(
 const showAddItemModal = ref(false);
 const newItemName = ref("");
 const newItemValue = ref(0);
+
+// Route for getting client data
+const route = useRoute();
+const router = useRouter();
 
 // Computed properties
 const canCalculate = computed(() => {
@@ -363,6 +374,11 @@ const totalImplementationCost = computed(() => {
   console.log("Debug - Additional Items Total:", additionalItemsTotal);
   console.log("Debug - Total Implementation Cost:", total);
   return total;
+});
+
+// Computed property to determine if opened from client page
+const openedFromClient = computed(() => {
+  return !!route.query.clientId;
 });
 
 // Methods
@@ -426,6 +442,37 @@ const clearForm = () => {
   discountPercentage.value = 0;
   showResults.value = false;
   additionalItems.value = [];
+};
+
+// Load client data from route query
+const loadClientData = () => {
+  const { clientName: routeClientName, clientId: routeClientId } = route.query;
+  console.log("Debug - loadClientData, route.query:", route.query);
+  console.log("Debug - routeClientName:", routeClientName);
+  console.log("Debug - routeClientId:", routeClientId);
+
+  if (routeClientName && typeof routeClientName === "string") {
+    clientName.value = routeClientName;
+  }
+};
+
+onMounted(() => {
+  loadClientData();
+});
+
+// Method to handle back navigation
+const goBack = () => {
+  const { clientId } = route.query;
+  console.log("Debug - goBack called, clientId:", clientId);
+  console.log("Debug - route.query:", route.query);
+
+  if (clientId && typeof clientId === "string") {
+    console.log("Debug - Navigating to:", `/client/${clientId}`);
+    router.replace(`/client/${clientId}`);
+  } else {
+    console.log("Debug - Using router.back()");
+    router.back();
+  }
 };
 
 const addItem = () => {

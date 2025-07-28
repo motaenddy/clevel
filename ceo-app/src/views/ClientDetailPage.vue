@@ -72,7 +72,18 @@
         >
           <ion-card-header>
             <ion-card-title>Resumen Financiero</ion-card-title>
-            <ion-icon slot="end" :icon="document" color="medium"></ion-icon>
+            <div class="card-header-actions">
+              <ion-button
+                fill="clear"
+                size="small"
+                @click.stop="openQuoter"
+                class="quoter-button"
+              >
+                <ion-icon :icon="calculator" slot="start"></ion-icon>
+                Cotizar
+              </ion-button>
+              <ion-icon slot="end" :icon="document" color="medium"></ion-icon>
+            </div>
           </ion-card-header>
           <ion-card-content>
             <ion-grid>
@@ -278,6 +289,7 @@ import {
   trendingUp,
   addCircle,
   add,
+  calculator,
 } from "ionicons/icons";
 import { ref, computed, onMounted, onUnmounted } from "vue";
 import { useRoute, useRouter } from "vue-router";
@@ -470,6 +482,19 @@ const createNewNegotiation = async () => {
   } catch (error) {
     console.error("Error creating new negotiation:", error);
   }
+};
+
+const openQuoter = () => {
+  if (!client.value) return;
+
+  // Navegar al cotizador con los datos del cliente
+  router.push({
+    path: "/quoter",
+    query: {
+      clientName: client.value.nombre,
+      clientId: client.value.id,
+    },
+  });
 };
 
 // Load data on mount
@@ -728,5 +753,19 @@ ion-item[button]:hover {
 .financial-summary-card:hover {
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
   transform: translateY(-2px);
+}
+
+.card-header-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.quoter-button {
+  --color: var(--ion-color-primary);
+  font-size: 0.8rem;
+  --padding-start: 8px;
+  --padding-end: 8px;
+  height: 28px;
 }
 </style>
