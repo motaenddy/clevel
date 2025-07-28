@@ -5,6 +5,7 @@ import ClientsPage from '../views/ClientsPage.vue'
 import ClientDetailPage from '../views/ClientDetailPage.vue'
 import BillingHistoryPage from '../views/BillingHistoryPage.vue'
 import StageDetailPage from '../views/StageDetailPage.vue'
+import QuoterPage from '../views/QuoterPage.vue'
 
 const routes: Array<RouteRecordRaw> = [
   {
@@ -35,6 +36,11 @@ const routes: Array<RouteRecordRaw> = [
     path: '/negotiation/:negotiationId/stage/:stageId',
     name: 'StageDetail',
     component: StageDetailPage
+  },
+  {
+    path: '/quoter',
+    name: 'Quoter',
+    component: QuoterPage
   },
 
 ]

@@ -9,22 +9,27 @@
 
       <ion-content>
         <ion-list>
-          <ion-menu-toggle auto-hide="false">
-            <ion-item @click="navigateTo('/dashboard')" button>
+          <ion-menu-toggle :auto-hide="false">
+            <ion-item @click="navigateTo('/dashboard')">
               <ion-icon slot="start" :icon="analytics"></ion-icon>
               <ion-label>Dashboard</ion-label>
             </ion-item>
 
-            <ion-item @click="navigateTo('/clients')" button>
+            <ion-item @click="navigateTo('/clients')">
               <ion-icon slot="start" :icon="people"></ion-icon>
               <ion-label>Clientes</ion-label>
+            </ion-item>
+
+            <ion-item @click="navigateTo('/quoter')">
+              <ion-icon slot="start" :icon="calculator"></ion-icon>
+              <ion-label>Cotizador</ion-label>
             </ion-item>
           </ion-menu-toggle>
         </ion-list>
 
         <ion-list>
-          <ion-menu-toggle auto-hide="false">
-            <ion-item @click="logout" button color="danger">
+          <ion-menu-toggle :auto-hide="false">
+            <ion-item @click="logout" color="danger">
               <ion-icon slot="start" :icon="logOut"></ion-icon>
               <ion-label>Logout</ion-label>
             </ion-item>
@@ -52,7 +57,7 @@ import {
   IonLabel,
   IonMenuToggle,
 } from "@ionic/vue";
-import { analytics, logOut, people } from "ionicons/icons";
+import { analytics, logOut, people, calculator } from "ionicons/icons";
 import { useRouter } from "vue-router";
 
 const router = useRouter();
