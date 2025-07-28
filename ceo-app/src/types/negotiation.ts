@@ -16,6 +16,7 @@ export interface NegotiationStage {
   icon: string;
   description: string;
   subStages: SubStage[];
+  notes?: string; // Notas opcionales para la etapa
 }
 
 export interface Negotiation {
@@ -176,7 +177,7 @@ export const DEFAULT_NEGOTIATION_STAGES: NegotiationStage[] = [
     id: 'closing',
     name: 'Cierre',
     order: 4,
-    color: '#28a745',
+    color: '#90EE90',
     icon: 'checkmark-circle',
     description: 'Negociación cerrada',
     subStages: [
@@ -302,7 +303,7 @@ export const DEFAULT_NEGOTIATION_STAGES: NegotiationStage[] = [
     id: 'implementation_completed',
     name: 'Implementación Finalizada',
     order: 7,
-    color: '#20c997',
+    color: '#98FB98',
     icon: 'checkmark-done-circle',
     description: 'Implementación completada',
     subStages: [

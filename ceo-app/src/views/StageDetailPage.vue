@@ -280,13 +280,12 @@ import {
   trendingUp as trendingUpIcon,
 } from "ionicons/icons";
 import { ref, computed, onMounted } from "vue";
-import { useRoute, useRouter } from "vue-router";
+import { useRoute } from "vue-router";
 import { NegotiationStage, SubStage } from "../types/negotiation";
 import { NegotiationService } from "../services/NegotiationService";
 
 // Route and router
 const route = useRoute();
-const router = useRouter();
 
 // Services
 const negotiationService = new NegotiationService();
@@ -376,21 +375,16 @@ const toggleSubStage = async (subStage: SubStage) => {
       subStage.completedDate = undefined;
     }
 
-    // Update the negotiation
-    const negotiation = await negotiationService.getNegotiationById(
-      negotiationId.value
-    );
-    if (negotiation) {
-      const updatedNegotiation = { ...negotiation };
-      const stageIndex = updatedNegotiation.stages.findIndex(
-        (s) => s.id === stageId.value
+    // Update the negotiation using the new method that handles auto-advance
+    if (stage.value) {
+      await negotiationService.updateStageSubStages(
+        negotiationId.value,
+        stageId.value,
+        stage.value.subStages
       );
-      if (stageIndex !== -1 && stage.value) {
-        updatedNegotiation.stages[stageIndex] = stage.value;
-        await negotiationService.updateNegotiation(negotiationId.value, {
-          stages: updatedNegotiation.stages,
-        });
-      }
+
+      // Recargar la etapa para asegurar que los datos estén actualizados
+      await loadStage();
     }
   } catch (error) {
     console.error("Error toggling sub stage:", error);
@@ -573,8 +567,8 @@ onMounted(async () => {
 }
 
 ion-item.completed {
-  --background: var(--ion-color-success-tint);
-  opacity: 0.8;
+  --background: #e8f5e8;
+  opacity: 0.9;
 }
 
 .completion-date {

@@ -27,17 +27,39 @@
           <div class="stage-info">
             <h4>{{ stage.name }}</h4>
             <p>{{ stage.description }}</p>
-            <div v-if="getStageDate(stage.id)" class="stage-date">
+            <div
+              v-if="getStageProgress(stage.id).total > 0"
+              class="stage-progress"
+            >
+              <span class="progress-text"
+                >{{ getStageProgress(stage.id).completed }}/{{
+                  getStageProgress(stage.id).total
+                }}
+                sub-etapas</span
+              >
+            </div>
+            <div v-if="getLatestCompletedSubStage(stage.id)" class="stage-date">
               <ion-icon :icon="calendar" size="small"></ion-icon>
-              <span>{{ formatDate(getStageDate(stage.id)!) }}</span>
+              <span
+                >{{ getLatestCompletedSubStage(stage.id)?.name }} -
+                {{
+                  formatDate(
+                    getLatestCompletedSubStage(stage.id)?.completedDate!
+                  )
+                }}</span
+              >
             </div>
             <div
-              v-else
-              class="stage-date-placeholder"
-              @click.stop="setStageDate(stage.id)"
+              v-else-if="getStageProgress(stage.id).completed > 0"
+              class="stage-date"
             >
-              <ion-icon :icon="calendarOutline" size="small"></ion-icon>
-              <span>Establecer fecha</span>
+              <ion-icon :icon="calendar" size="small"></ion-icon>
+              <span
+                >{{ getStageProgress(stage.id).completed }}/{{
+                  getStageProgress(stage.id).total
+                }}
+                sub-etapas completadas</span
+              >
             </div>
           </div>
           <div class="stage-status">
@@ -101,125 +123,7 @@
           </ion-row>
         </ion-grid>
       </div>
-
-      <!-- Acciones -->
-      <div class="negotiation-actions">
-        <ion-button fill="outline" size="small" @click="showStageModal = true">
-          <ion-icon :icon="settings" slot="start"></ion-icon>
-          Cambiar Etapa
-        </ion-button>
-
-        <ion-button fill="outline" size="small" @click="showNotesModal = true">
-          <ion-icon :icon="create" slot="start"></ion-icon>
-          Agregar Nota
-        </ion-button>
-
-        <ion-button v-if="canAdvance" size="small" @click="advanceToNextStage">
-          <ion-icon :icon="arrowForward" slot="start"></ion-icon>
-          Avanzar
-        </ion-button>
-      </div>
     </ion-card-content>
-
-    <!-- Modal para cambiar etapa -->
-    <ion-modal :is-open="showStageModal" @didDismiss="showStageModal = false">
-      <ion-header>
-        <ion-toolbar>
-          <ion-title>Cambiar Etapa</ion-title>
-          <ion-buttons slot="end">
-            <ion-button @click="showStageModal = false">Cerrar</ion-button>
-          </ion-buttons>
-        </ion-toolbar>
-      </ion-header>
-      <ion-content>
-        <ion-list>
-          <ion-item
-            v-for="stage in negotiation.stages"
-            :key="stage.id"
-            button
-            @click="changeStage(stage.id)"
-            :color="isCurrentStage(stage.id) ? 'primary' : undefined"
-          >
-            <ion-icon
-              :icon="getIcon(stage.icon)"
-              slot="start"
-              :color="stage.color"
-            ></ion-icon>
-            <ion-label>
-              <h3>{{ stage.name }}</h3>
-              <p>{{ stage.description }}</p>
-            </ion-label>
-            <ion-icon
-              v-if="isCurrentStage(stage.id)"
-              :icon="checkmark"
-              slot="end"
-              color="primary"
-            ></ion-icon>
-          </ion-item>
-        </ion-list>
-      </ion-content>
-    </ion-modal>
-
-    <!-- Modal para agregar nota -->
-    <ion-modal :is-open="showNotesModal" @didDismiss="showNotesModal = false">
-      <ion-header>
-        <ion-toolbar>
-          <ion-title>Agregar Nota</ion-title>
-          <ion-buttons slot="end">
-            <ion-button @click="showNotesModal = false">Cancelar</ion-button>
-            <ion-button @click="saveNote" color="primary">Guardar</ion-button>
-          </ion-buttons>
-        </ion-toolbar>
-      </ion-header>
-      <ion-content>
-        <ion-item>
-          <ion-textarea
-            v-model="newNote"
-            placeholder="Escribe una nota sobre esta negociación..."
-            rows="4"
-            auto-grow
-          ></ion-textarea>
-        </ion-item>
-      </ion-content>
-    </ion-modal>
-
-    <!-- Modal para establecer fecha de etapa -->
-    <ion-modal :is-open="showDateModal" @didDismiss="showDateModal = false">
-      <ion-header>
-        <ion-toolbar>
-          <ion-title>Establecer Fecha - {{ selectedStageName }}</ion-title>
-          <ion-buttons slot="end">
-            <ion-button @click="showDateModal = false">Cancelar</ion-button>
-            <ion-button @click="saveStageDate" color="primary"
-              >Guardar</ion-button
-            >
-          </ion-buttons>
-        </ion-toolbar>
-      </ion-header>
-      <ion-content>
-        <div class="date-picker-container">
-          <ion-item>
-            <ion-label position="stacked">Fecha de la etapa</ion-label>
-            <ion-datetime
-              v-model="selectedDate"
-              presentation="date"
-              :prefer-wheel="true"
-              :show-default-buttons="false"
-            ></ion-datetime>
-          </ion-item>
-
-          <ion-item>
-            <ion-label position="stacked">Nota (opcional)</ion-label>
-            <ion-textarea
-              v-model="dateNote"
-              placeholder="Agregar nota sobre esta fecha..."
-              rows="3"
-              auto-grow
-            ></ion-textarea>
-          </ion-item>
-        </div>
-      </ion-content>
-    </ion-modal>
   </ion-card>
 </template>
 
@@ -230,32 +134,16 @@ import {
   IonCardTitle,
   IonCardContent,
   IonIcon,
-  IonButton,
-  IonModal,
-  IonHeader,
-  IonToolbar,
-  IonTitle,
-  IonButtons,
-  IonContent,
-  IonList,
-  IonItem,
-  IonLabel,
-  IonTextarea,
   IonGrid,
   IonRow,
   IonCol,
   IonProgressBar,
-  IonDatetime,
 } from "@ionic/vue";
 import {
   trendingUp,
   checkmarkCircle,
   ellipse,
   ellipseOutline,
-  settings,
-  create,
-  arrowForward,
-  checkmark,
   person,
   documentText,
   chatbubbles,
@@ -265,9 +153,8 @@ import {
   checkmarkDoneCircle,
   trendingUp as trendingUpIcon,
   calendar,
-  calendarOutline,
 } from "ionicons/icons";
-import { ref, computed } from "vue";
+import { onMounted, onUnmounted } from "vue";
 import { useRouter } from "vue-router";
 import { Negotiation } from "../types/negotiation";
 import { NegotiationService } from "../services/NegotiationService";
@@ -282,48 +169,92 @@ const emit = defineEmits<{
 
 const router = useRouter();
 const negotiationService = new NegotiationService();
-const showStageModal = ref(false);
-const showNotesModal = ref(false);
-const newNote = ref("");
-
-// Variables para el modal de fecha
-const showDateModal = ref(false);
-const selectedStageId = ref("");
-const selectedStageName = ref("");
-const selectedDate = ref(new Date().toISOString());
-const dateNote = ref("");
-
-// Computed properties
-const canAdvance = computed(() => {
-  const currentIndex = props.negotiation.stages.findIndex(
-    (s) => s.id === props.negotiation.currentStage
-  );
-  return currentIndex < props.negotiation.stages.length - 1;
-});
 
 // Methods
 const isStageCompleted = (stageId: string): boolean => {
-  const currentIndex = props.negotiation.stages.findIndex(
-    (s) => s.id === props.negotiation.currentStage
-  );
-  const stageIndex = props.negotiation.stages.findIndex(
-    (s) => s.id === stageId
-  );
-  return stageIndex < currentIndex;
+  const stage = props.negotiation.stages.find((s) => s.id === stageId);
+  if (!stage || !stage.subStages || stage.subStages.length === 0) {
+    // Si no hay sub-etapas, usar la lógica original
+    const currentIndex = props.negotiation.stages.findIndex(
+      (s) => s.id === props.negotiation.currentStage
+    );
+    const stageIndex = props.negotiation.stages.findIndex(
+      (s) => s.id === stageId
+    );
+    return stageIndex < currentIndex;
+  }
+
+  // Verificar que todas las sub-etapas estén completadas
+  return stage.subStages.every((subStage) => subStage.completed);
 };
 
 const isCurrentStage = (stageId: string): boolean => {
-  return stageId === props.negotiation.currentStage;
+  // Una etapa es actual si es la etapa designada como currentStage Y tiene sub-etapas en progreso
+  if (stageId !== props.negotiation.currentStage) {
+    return false;
+  }
+
+  const stage = props.negotiation.stages.find((s) => s.id === stageId);
+  if (!stage || !stage.subStages || stage.subStages.length === 0) {
+    return true; // Si no hay sub-etapas, es la etapa actual
+  }
+
+  // Es etapa actual si tiene sub-etapas pero no todas están completadas
+  const completedSubStages = stage.subStages.filter(
+    (subStage) => subStage.completed
+  ).length;
+  return completedSubStages > 0 && completedSubStages < stage.subStages.length;
 };
 
 const isUpcomingStage = (stageId: string): boolean => {
-  const currentIndex = props.negotiation.stages.findIndex(
-    (s) => s.id === props.negotiation.currentStage
-  );
-  const stageIndex = props.negotiation.stages.findIndex(
-    (s) => s.id === stageId
-  );
-  return stageIndex > currentIndex;
+  // Una etapa es futura si no está completada y no es la actual
+  return !isStageCompleted(stageId) && !isCurrentStage(stageId);
+};
+
+// Calcular progreso de sub-etapas para una etapa
+const getStageProgress = (
+  stageId: string
+): { completed: number; total: number; percentage: number } => {
+  const stage = props.negotiation.stages.find((s) => s.id === stageId);
+  if (!stage || !stage.subStages || stage.subStages.length === 0) {
+    return { completed: 0, total: 0, percentage: 0 };
+  }
+
+  const completed = stage.subStages.filter(
+    (subStage) => subStage.completed
+  ).length;
+  const total = stage.subStages.length;
+  const percentage = total > 0 ? (completed / total) * 100 : 0;
+
+  // Debug: Log para verificar los datos
+  console.log(`Stage ${stageId}:`, {
+    total: total,
+    completed: completed,
+    subStages: stage.subStages.map((s) => ({
+      name: s.name,
+      completed: s.completed,
+    })),
+  });
+
+  return { completed, total, percentage };
+};
+
+const getLatestCompletedSubStage = (stageId: string) => {
+  const stage = props.negotiation.stages.find((s) => s.id === stageId);
+  if (!stage || !stage.subStages || stage.subStages.length === 0) {
+    return null;
+  }
+
+  // Obtener sub-etapas completadas ordenadas por fecha de completado (más reciente primero)
+  const completedSubStages = stage.subStages
+    .filter((subStage) => subStage.completed && subStage.completedDate)
+    .sort(
+      (a, b) =>
+        new Date(b.completedDate!).getTime() -
+        new Date(a.completedDate!).getTime()
+    );
+
+  return completedSubStages.length > 0 ? completedSubStages[0] : null;
 };
 
 const getIcon = (iconName: string) => {
@@ -359,91 +290,28 @@ const selectStage = (stageId: string) => {
   router.push(`/negotiation/${props.negotiation.id}/stage/${stageId}`);
 };
 
-const changeStage = async (stageId: string) => {
+// Método para recargar datos cuando se regresa de la vista de sub-etapas
+const reloadNegotiation = async () => {
   try {
-    const updated = await negotiationService.goToStage(
-      props.negotiation.id,
-      stageId
-    );
-    if (updated) {
-      emit("update", updated);
-    }
-    showStageModal.value = false;
-  } catch (error) {
-    console.error("Error changing stage:", error);
-  }
-};
-
-const advanceToNextStage = async () => {
-  try {
-    const updated = await negotiationService.advanceToNextStage(
+    const updatedNegotiation = await negotiationService.getNegotiationById(
       props.negotiation.id
     );
-    if (updated) {
-      emit("update", updated);
+    if (updatedNegotiation) {
+      emit("update", updatedNegotiation);
     }
   } catch (error) {
-    console.error("Error advancing stage:", error);
+    console.error("Error reloading negotiation:", error);
   }
 };
 
-const saveNote = async () => {
-  if (!newNote.value.trim()) return;
+// Recargar datos cuando el componente se enfoca (cuando se regresa de sub-etapas)
+onMounted(() => {
+  window.addEventListener("focus", reloadNegotiation);
+});
 
-  try {
-    const updated = await negotiationService.updateNegotiation(
-      props.negotiation.id,
-      {
-        notes:
-          props.negotiation.notes +
-          "\n\n" +
-          new Date().toLocaleString() +
-          ":\n" +
-          newNote.value,
-      }
-    );
-    if (updated) {
-      emit("update", updated);
-    }
-    newNote.value = "";
-    showNotesModal.value = false;
-  } catch (error) {
-    console.error("Error saving note:", error);
-  }
-};
-
-// Métodos para manejar fechas de etapas
-const getStageDate = (stageId: string): Date | null => {
-  return props.negotiation.stageDates?.[stageId] || null;
-};
-
-const setStageDate = (stageId: string) => {
-  const stage = props.negotiation.stages.find((s) => s.id === stageId);
-  if (stage) {
-    selectedStageId.value = stageId;
-    selectedStageName.value = stage.name;
-    selectedDate.value = new Date().toISOString();
-    dateNote.value = "";
-    showDateModal.value = true;
-  }
-};
-
-const saveStageDate = async () => {
-  try {
-    const updated = await negotiationService.setStageDate(
-      props.negotiation.id,
-      selectedStageId.value,
-      new Date(selectedDate.value),
-      dateNote.value || `Fecha establecida para ${selectedStageName.value}`
-    );
-    if (updated) {
-      emit("update", updated);
-    }
-    showDateModal.value = false;
-  } catch (error) {
-    console.error("Error setting stage date:", error);
-  }
-};
+onUnmounted(() => {
+  window.removeEventListener("focus", reloadNegotiation);
+});
 </script>
 
 <style scoped>
@@ -473,8 +341,8 @@ const saveStageDate = async () => {
 }
 
 .stage-item.completed {
-  background-color: var(--ion-color-success-tint);
-  border-color: var(--ion-color-success);
+  background-color: #e8f5e8;
+  border-color: #90ee90;
 }
 
 .stage-item.current {
@@ -483,7 +351,7 @@ const saveStageDate = async () => {
 }
 
 .stage-item.upcoming {
-  opacity: 0.6;
+  /* Etapas futuras se muestran normalmente sin transparencia */
 }
 
 .stage-icon {
@@ -522,32 +390,14 @@ const saveStageDate = async () => {
   color: var(--ion-color-success);
 }
 
-.stage-date-placeholder {
-  display: flex;
-  align-items: center;
-  gap: 4px;
-  margin-top: 8px;
-  font-size: 11px;
+.stage-progress {
+  margin-top: 4px;
+}
+
+.stage-progress .progress-text {
+  font-size: 10px;
   color: var(--ion-color-medium);
-  cursor: pointer;
-  padding: 4px 8px;
-  border-radius: 4px;
-  border: 1px dashed var(--ion-color-medium);
-  transition: all 0.2s ease;
-}
-
-.stage-date-placeholder:hover {
-  background-color: var(--ion-color-light);
-  color: var(--ion-color-primary);
-  border-color: var(--ion-color-primary);
-}
-
-.date-picker-container {
-  padding: 16px;
-}
-
-.date-picker-container ion-item {
-  margin-bottom: 16px;
+  font-weight: 500;
 }
 
 .stage-status {
@@ -583,22 +433,5 @@ const saveStageDate = async () => {
 .date-text {
   font-size: 12px;
   color: var(--ion-color-medium);
-}
-
-.negotiation-actions {
-  display: flex;
-  gap: 8px;
-  flex-wrap: wrap;
-  margin-top: 16px;
-}
-
-@media (max-width: 768px) {
-  .negotiation-actions {
-    flex-direction: column;
-  }
-
-  .negotiation-actions ion-button {
-    width: 100%;
-  }
 }
 </style>

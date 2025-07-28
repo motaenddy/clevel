@@ -202,9 +202,28 @@ export class NegotiationService {
       return stage;
     });
 
-    return await this.updateNegotiation(negotiationId, {
+    const updatedNegotiation = await this.updateNegotiation(negotiationId, {
       stages: updatedStages
     });
+
+    // Verificar si la etapa actual está completada y avanzar automáticamente
+    if (updatedNegotiation && stageId === updatedNegotiation.currentStage) {
+      const isCurrentStageCompleted = this.isStageCompleted(updatedNegotiation, stageId);
+      if (isCurrentStageCompleted) {
+        return await this.advanceToNextStage(negotiationId, `Etapa ${this.getStageName(stageId)} completada automáticamente`);
+      }
+    }
+
+    return updatedNegotiation;
+  }
+
+  // Verificar si una etapa está completada basándose en sus sub-etapas
+  private isStageCompleted(negotiation: Negotiation, stageId: string): boolean {
+    const stage = negotiation.stages.find(s => s.id === stageId);
+    if (!stage || !stage.subStages || stage.subStages.length === 0) {
+      return false;
+    }
+    return stage.subStages.every(subStage => subStage.completed);
   }
 
   // Obtener historial de negociación

@@ -279,7 +279,7 @@ import {
   addCircle,
   add,
 } from "ionicons/icons";
-import { ref, computed, onMounted } from "vue";
+import { ref, computed, onMounted, onUnmounted } from "vue";
 import { useRoute, useRouter } from "vue-router";
 import { useClientsStore } from "../stores/clients";
 import { useBillingStore } from "../stores/billing";
@@ -487,6 +487,19 @@ onMounted(async () => {
   } finally {
     loading.value = false;
   }
+});
+
+// Recargar negociación cuando se regresa de la vista de sub-etapas
+const handleFocus = async () => {
+  await loadClientNegotiation();
+};
+
+onMounted(() => {
+  window.addEventListener("focus", handleFocus);
+});
+
+onUnmounted(() => {
+  window.removeEventListener("focus", handleFocus);
 });
 </script>
 
