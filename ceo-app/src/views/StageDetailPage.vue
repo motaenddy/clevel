@@ -3,7 +3,7 @@
     <ion-header :translucent="true">
       <ion-toolbar>
         <ion-buttons slot="start">
-          <ion-back-button default-href="/client"></ion-back-button>
+          <ion-back-button default-href="/clients"></ion-back-button>
         </ion-buttons>
         <ion-title>{{ stage?.name || "Detalle de Etapa" }}</ion-title>
         <ion-buttons slot="end">

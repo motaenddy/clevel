@@ -9,7 +9,10 @@
 
     <ion-card-content>
       <!-- Current Stage (Most Recent) - Only when collapsed -->
-      <div v-if="!isExpanded && currentStage" class="current-stage-container">
+      <div
+        v-if="!isExpanded && currentStage && currentStage.id"
+        class="current-stage-container"
+      >
         <div
           class="stage-item"
           :class="{
@@ -98,7 +101,7 @@
       </div>
 
       <!-- All Stages (Collapsible) -->
-      <div v-if="isExpanded" class="pipeline-container">
+      <div v-if="isExpanded && negotiation.stages" class="pipeline-container">
         <div
           v-for="stage in negotiation.stages"
           :key="stage.id"
@@ -334,7 +337,9 @@ const formatDate = (date: Date): string => {
 
 const selectStage = (stageId: string) => {
   // Navegar a la vista de sub-etapas
-  router.push(`/negotiation/${props.negotiation.id}/stage/${stageId}`);
+  const route = `/negotiation/${props.negotiation.id}/stage/${stageId}`;
+  console.log("Navigating to:", route);
+  router.push(route);
 };
 
 const toggleExpanded = () => {
