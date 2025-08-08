@@ -6,6 +6,9 @@ import ClientDetailPage from '../views/ClientDetailPage.vue'
 import BillingHistoryPage from '../views/BillingHistoryPage.vue'
 import StageDetailPage from '../views/StageDetailPage.vue'
 import QuoterPage from '../views/QuoterPage.vue'
+import UserProfilePage from '../views/UserProfilePage.vue'
+import EmployeesPage from '../views/EmployeesPage.vue'
+import EmployeeDetailPage from '../views/EmployeeDetailPage.vue'
 
 const routes: Array<RouteRecordRaw> = [
   {
@@ -42,7 +45,21 @@ const routes: Array<RouteRecordRaw> = [
     name: 'Quoter',
     component: QuoterPage
   },
-
+  {
+    path: '/profile',
+    name: 'UserProfile',
+    component: UserProfilePage
+  },
+  {
+    path: '/employees',
+    name: 'Employees',
+    component: EmployeesPage
+  },
+  {
+    path: '/employee/:id',
+    name: 'EmployeeDetail',
+    component: EmployeeDetailPage
+  },
 ]
 
 const router = createRouter({

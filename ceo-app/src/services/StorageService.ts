@@ -2,6 +2,7 @@
 const CLIENTS_KEY = 'ceo-app-clients';
 const BILLING_KEY = 'ceo-app-billing';
 const SETTINGS_KEY = 'ceo-app-settings';
+const USER_PROFILE_KEY = 'ceo-app-user-profile';
 
 // Types
 export interface Client {
@@ -41,6 +42,84 @@ export interface AppSettings {
   currency: string;
   dateFormat: string;
   notifications: boolean;
+}
+
+export interface UserProfile {
+  id: string;
+  nombre: string;
+  apellido: string;
+  email: string;
+  telefono?: string;
+  cargo?: string; // Ej: CEO, Director, etc.
+  empresa?: string;
+  avatarUrl?: string;
+}
+
+// Employee types
+export interface EmployeeTask {
+  id: string
+  titulo: string
+  descripcion?: string
+  prioridad: 'baja' | 'media' | 'alta'
+  estado: 'pendiente' | 'en_progreso' | 'completada'
+  fechaCreacion: Date
+  fechaVencimiento?: Date
+  fechaCompletado?: Date
+  asignadoPor?: string
+}
+
+export interface Employee {
+  id: string
+  nombre: string
+  apellido: string
+  email: string
+  telefono: string
+  cargo: string
+  departamento: string
+  fechaContratacion: Date
+  salario: number
+  estado: 'activo' | 'inactivo' | 'vacaciones' | 'licencia'
+  supervisor?: string
+  direccion?: string
+  documentoIdentidad?: string
+  fechaNacimiento?: Date
+  notas?: string
+  actividadActual?: string
+  actividadActualUpdatedAt?: Date
+  habilidades: string[]
+  proyectos: string[]
+  evaluaciones: EmployeeEvaluation[]
+  tareas?: EmployeeTask[]
+}
+
+export interface EmployeeEvaluation {
+  id: string
+  fecha: Date
+  evaluador: string
+  calificacion: number
+  comentarios: string
+  areasMejora: string[]
+  areasFortaleza: string[]
+}
+
+export interface Department {
+  id: string
+  nombre: string
+  descripcion: string
+  jefeDepartamento?: string
+  presupuesto?: number
+  empleados: string[]
+}
+
+export interface Position {
+  id: string
+  titulo: string
+  departamento: string
+  descripcion: string
+  salarioMinimo: number
+  salarioMaximo: number
+  requisitos: string[]
+  responsabilidades: string[]
 }
 
 class StorageService {
@@ -172,6 +251,125 @@ class StorageService {
       dateFormat: 'DD/MM/YYYY',
       notifications: true
     };
+  }
+
+  // User profile operations
+  saveUserProfile(profile: UserProfile): void {
+    try {
+      localStorage.setItem(USER_PROFILE_KEY, JSON.stringify(profile));
+    } catch (error) {
+      console.error('Error saving user profile:', error);
+    }
+  }
+
+  loadUserProfile(): UserProfile {
+    try {
+      const data = localStorage.getItem(USER_PROFILE_KEY);
+      if (data) {
+        return JSON.parse(data);
+      }
+    } catch (error) {
+      console.error('Error loading user profile:', error);
+    }
+    // Default mock profile
+    const defaultProfile: UserProfile = {
+      id: 'me',
+      nombre: 'María',
+      apellido: 'González',
+      email: 'maria.gonzalez@empresa.com',
+      telefono: '809-555-0101',
+      cargo: 'CEO',
+      empresa: 'Tu Empresa',
+    };
+    this.saveUserProfile(defaultProfile);
+    return defaultProfile;
+  }
+
+  // Employee storage methods
+  saveEmployees(employees: Employee[]): void {
+    try {
+      localStorage.setItem('employees', JSON.stringify(employees))
+    } catch (error) {
+      console.error('Error saving employees:', error)
+      throw error
+    }
+  }
+
+  loadEmployees(): Employee[] {
+    try {
+      const data = localStorage.getItem('employees')
+      if (!data) return []
+      
+      const employees = JSON.parse(data)
+      // Convert date strings back to Date objects
+      return employees.map((emp: any) => ({
+        ...emp,
+        fechaContratacion: new Date(emp.fechaContratacion),
+        fechaNacimiento: emp.fechaNacimiento ? new Date(emp.fechaNacimiento) : undefined,
+        actividadActualUpdatedAt: emp.actividadActualUpdatedAt ? new Date(emp.actividadActualUpdatedAt) : undefined,
+        evaluaciones: emp.evaluaciones?.map((evaluation: any) => ({
+          ...evaluation,
+          fecha: new Date(evaluation.fecha)
+        })) || [],
+        tareas: (emp.tareas || []).map((t: any) => ({
+          ...t,
+          fechaCreacion: new Date(t.fechaCreacion),
+          fechaVencimiento: t.fechaVencimiento ? new Date(t.fechaVencimiento) : undefined,
+          fechaCompletado: t.fechaCompletado ? new Date(t.fechaCompletado) : undefined
+        }))
+      }))
+    } catch (error) {
+      console.error('Error loading employees:', error)
+      return []
+    }
+  }
+
+  saveDepartments(departments: Department[]): void {
+    try {
+      localStorage.setItem('departments', JSON.stringify(departments))
+    } catch (error) {
+      console.error('Error saving departments:', error)
+      throw error
+    }
+  }
+
+  loadDepartments(): Department[] {
+    try {
+      const data = localStorage.getItem('departments')
+      return data ? JSON.parse(data) : []
+    } catch (error) {
+      console.error('Error loading departments:', error)
+      return []
+    }
+  }
+
+  savePositions(positions: Position[]): void {
+    try {
+      localStorage.setItem('positions', JSON.stringify(positions))
+    } catch (error) {
+      console.error('Error saving positions:', error)
+      throw error
+    }
+  }
+
+  loadPositions(): Position[] {
+    try {
+      const data = localStorage.getItem('positions')
+      return data ? JSON.parse(data) : []
+    } catch (error) {
+      console.error('Error loading positions:', error)
+      return []
+    }
+  }
+
+  clearEmployeeData(): void {
+    try {
+      localStorage.removeItem('employees')
+      localStorage.removeItem('departments')
+      localStorage.removeItem('positions')
+    } catch (error) {
+      console.error('Error clearing employee data:', error)
+    }
   }
 
   // Utility methods

@@ -20,6 +20,11 @@
               <ion-label>Clientes</ion-label>
             </ion-item>
 
+            <ion-item @click="navigateTo('/employees')">
+              <ion-icon slot="start" :icon="person"></ion-icon>
+              <ion-label>Empleados</ion-label>
+            </ion-item>
+
             <ion-item @click="navigateTo('/quoter')">
               <ion-icon slot="start" :icon="calculator"></ion-icon>
               <ion-label>Cotizador</ion-label>
@@ -29,6 +34,10 @@
 
         <ion-list>
           <ion-menu-toggle :auto-hide="false">
+            <ion-item @click="navigateTo('/profile')">
+              <ion-icon slot="start" :icon="person"></ion-icon>
+              <ion-label>Mi Perfil</ion-label>
+            </ion-item>
             <ion-item @click="logout" color="danger">
               <ion-icon slot="start" :icon="logOut"></ion-icon>
               <ion-label>Logout</ion-label>
@@ -57,7 +66,7 @@ import {
   IonLabel,
   IonMenuToggle,
 } from "@ionic/vue";
-import { analytics, logOut, people, calculator } from "ionicons/icons";
+import { analytics, logOut, people, person, calculator } from "ionicons/icons";
 import { useRouter } from "vue-router";
 
 const router = useRouter();
@@ -73,3 +82,10 @@ const logout = () => {
   router.push("/dashboard");
 };
 </script>
+
+<style scoped>
+/* Pointer cursor on clickable menu items */
+ion-menu ion-item {
+  cursor: pointer;
+}
+</style>
