@@ -96,6 +96,50 @@
       >
         Actualizar actividad
       </ion-button>
+
+      <!-- Tasks Section -->
+      <ion-card>
+        <ion-card-header>
+          <ion-card-title>Mis tareas</ion-card-title>
+        </ion-card-header>
+        <ion-card-content>
+          <ion-button
+            size="small"
+            @click="openNewTask"
+            :disabled="!canUpdateActivity"
+          >
+            Nueva tarea
+          </ion-button>
+          <EmployeeTaskList
+            v-if="tasks && tasks.length > 0"
+            :tasks="tasks"
+            @toggle-status="onToggleTaskStatus"
+            @edit-task="onEditTask"
+            @delete-task="onDeleteTask"
+          />
+          <p v-else class="empty-tasks">No tienes tareas</p>
+        </ion-card-content>
+      </ion-card>
+
+      <!-- Task Modal -->
+      <ion-modal :is-open="showTaskModal" @didDismiss="closeTaskModal">
+        <ion-header>
+          <ion-toolbar>
+            <ion-title>{{
+              editingTask ? "Editar Tarea" : "Nueva Tarea"
+            }}</ion-title>
+            <ion-buttons slot="end">
+              <ion-button @click="closeTaskModal">Cerrar</ion-button>
+            </ion-buttons>
+          </ion-toolbar>
+        </ion-header>
+        <ion-content>
+          <EmployeeTaskForm
+            :task="editingTask || undefined"
+            @task-saved="onTaskSaved"
+          />
+        </ion-content>
+      </ion-modal>
     </ion-content>
   </ion-page>
 </template>
@@ -116,11 +160,18 @@ import {
   IonLabel,
   IonInput,
   IonAvatar,
+  IonModal,
+  IonCard,
+  IonCardHeader,
+  IonCardTitle,
+  IonCardContent,
 } from "@ionic/vue";
 import { create, close, person } from "ionicons/icons";
 import { ref, computed, onMounted } from "vue";
 import { storageService, type UserProfile } from "../services/StorageService";
 import { useEmployeesStore } from "../stores/employees";
+import EmployeeTaskList from "../components/EmployeeTaskList.vue";
+import EmployeeTaskForm from "../components/EmployeeTaskForm.vue";
 
 const enableEdit = ref(false);
 const profile = ref<UserProfile>({
@@ -149,6 +200,7 @@ const matchedEmployee = computed(() => {
   );
 });
 const canUpdateActivity = computed(() => !!matchedEmployee.value);
+const tasks = computed(() => matchedEmployee.value?.tareas || []);
 
 const load = async () => {
   profile.value = storageService.loadUserProfile();
@@ -171,6 +223,49 @@ const saveActivity = async () => {
   );
 };
 
+// Tasks handlers
+const showTaskModal = ref(false);
+const editingTask = ref<any | null>(null);
+const openNewTask = () => {
+  editingTask.value = null;
+  showTaskModal.value = true;
+};
+const closeTaskModal = () => {
+  showTaskModal.value = false;
+  editingTask.value = null;
+};
+const onTaskSaved = async (payload: any) => {
+  if (!matchedEmployee.value) return;
+  try {
+    if (editingTask.value) {
+      const updated = { ...editingTask.value, ...payload };
+      await employeesStore.updateTask(matchedEmployee.value.id, updated);
+    } else {
+      await employeesStore.addTask(matchedEmployee.value.id, payload);
+    }
+    closeTaskModal();
+  } catch (e) {
+    console.error("Error saving task", e);
+  }
+};
+const onToggleTaskStatus = async (task: any) => {
+  if (!matchedEmployee.value) return;
+  const newStatus = task.estado === "completada" ? "pendiente" : "completada";
+  await employeesStore.updateTaskStatus(
+    matchedEmployee.value.id,
+    task.id,
+    newStatus
+  );
+};
+const onEditTask = (task: any) => {
+  editingTask.value = task;
+  showTaskModal.value = true;
+};
+const onDeleteTask = async (task: any) => {
+  if (!matchedEmployee.value) return;
+  await employeesStore.deleteTask(matchedEmployee.value.id, task.id);
+};
+
 onMounted(async () => {
   await load();
 });
@@ -179,5 +274,8 @@ onMounted(async () => {
 <style scoped>
 ion-item h2 {
   margin: 0 0 4px 0;
+}
+.empty-tasks {
+  color: var(--ion-color-medium);
 }
 </style>
