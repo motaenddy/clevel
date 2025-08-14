@@ -78,27 +78,25 @@
           </ion-card-content>
         </ion-card>
 
-        <!-- Métricas de Implementación -->
+        <!-- Pipeline de Implementaciones -->
         <ion-card>
           <ion-card-header>
-            <ion-card-title>Implementaciones</ion-card-title>
+            <ion-card-title>Pipeline de Implementaciones</ion-card-title>
           </ion-card-header>
           <ion-card-content>
             <ion-grid>
               <ion-row>
-                <ion-col size="6">
-                  <div class="metric-item">
-                    <div class="metric-label">Pendientes</div>
-                    <div class="metric-value">
-                      {{ implementacionesPendientes }}
-                    </div>
-                  </div>
-                </ion-col>
-                <ion-col size="6">
-                  <div class="metric-item">
-                    <div class="metric-label">Valor Total</div>
-                    <div class="metric-value">
-                      RD$ {{ valorImplementaciones.toLocaleString("es-DO") }}
+                <ion-col
+                  size="6"
+                  size-md="3"
+                  v-for="stage in implementationPipeline"
+                  :key="stage.name"
+                >
+                  <div class="pipeline-stage">
+                    <div class="stage-header">{{ stage.name }}</div>
+                    <div class="stage-count">{{ stage.count }}</div>
+                    <div class="stage-value">
+                      RD$ {{ stage.value.toLocaleString("es-DO") }}
                     </div>
                   </div>
                 </ion-col>
@@ -235,13 +233,31 @@ const salesPipeline = computed(() => {
   return stages;
 });
 
-// Métricas de implementación
-const implementacionesPendientes = computed(() => {
-  return Math.floor(Math.random() * 8) + 3; // 3-10 implementaciones
-});
-
-const valorImplementaciones = computed(() => {
-  return Math.floor(Math.random() * 3000000) + 1500000; // 1.5M-4.5M
+// Pipeline de implementaciones
+const implementationPipeline = computed(() => {
+  const stages = [
+    {
+      name: "Entrenamientos",
+      count: Math.floor(Math.random() * 4) + 1,
+      value: Math.floor(Math.random() * 800000) + 400000,
+    },
+    {
+      name: "Implementación",
+      count: Math.floor(Math.random() * 5) + 2,
+      value: Math.floor(Math.random() * 1200000) + 600000,
+    },
+    {
+      name: "Seguimiento",
+      count: Math.floor(Math.random() * 3) + 1,
+      value: Math.floor(Math.random() * 900000) + 500000,
+    },
+    {
+      name: "Facturando",
+      count: Math.floor(Math.random() * 6) + 2,
+      value: Math.floor(Math.random() * 1500000) + 800000,
+    },
+  ];
+  return stages;
 });
 
 // Actividad reciente

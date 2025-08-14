@@ -35,237 +35,274 @@
           </ion-card-content>
         </ion-card>
 
-        <!-- Contact Information -->
-        <ion-card>
-          <ion-card-header>
-            <ion-card-title>
-              <ion-icon :icon="call" slot="start"></ion-icon>
-              Información de Contacto
-            </ion-card-title>
-          </ion-card-header>
-          <ion-card-content>
-            <ion-list>
-              <ion-item>
-                <ion-icon :icon="mail" slot="start"></ion-icon>
-                <ion-label>
-                  <h3>Email</h3>
-                  <p>{{ employee.email }}</p>
-                </ion-label>
-              </ion-item>
-              <ion-item>
-                <ion-icon :icon="call" slot="start"></ion-icon>
-                <ion-label>
-                  <h3>Teléfono</h3>
-                  <p>{{ employee.telefono }}</p>
-                </ion-label>
-              </ion-item>
-              <ion-item v-if="employee.direccion">
-                <ion-icon :icon="location" slot="start"></ion-icon>
-                <ion-label>
-                  <h3>Dirección</h3>
-                  <p>{{ employee.direccion }}</p>
-                </ion-label>
-              </ion-item>
-            </ion-list>
-          </ion-card-content>
-        </ion-card>
+        <!-- Segment Navigation -->
+        <ion-segment v-model="selectedSegment" @ionChange="onSegmentChange">
+          <ion-segment-button value="general">
+            <ion-label>General</ion-label>
+          </ion-segment-button>
+          <ion-segment-button value="details">
+            <ion-label>Detalles</ion-label>
+          </ion-segment-button>
+        </ion-segment>
 
-        <!-- Work Information -->
-        <ion-card>
-          <ion-card-header>
-            <ion-card-title>
-              <ion-icon :icon="briefcase" slot="start"></ion-icon>
-              Información Laboral
-            </ion-card-title>
-          </ion-card-header>
-          <ion-card-content>
-            <ion-list>
-              <ion-item>
-                <ion-icon :icon="calendar" slot="start"></ion-icon>
-                <ion-label>
-                  <h3>Fecha de Contratación</h3>
-                  <p>{{ formatDate(employee.fechaContratacion) }}</p>
-                </ion-label>
-              </ion-item>
-              <ion-item>
-                <ion-icon :icon="card" slot="start"></ion-icon>
-                <ion-label>
-                  <h3>Salario</h3>
-                  <p>RD$ {{ formatCurrency(employee.salario) }}</p>
-                </ion-label>
-              </ion-item>
-              <ion-item v-if="employee.supervisor">
-                <ion-icon :icon="person" slot="start"></ion-icon>
-                <ion-label>
-                  <h3>Supervisor</h3>
-                  <p>{{ getSupervisorName(employee.supervisor) }}</p>
-                </ion-label>
-              </ion-item>
-              <ion-item v-if="employee.documentoIdentidad">
-                <ion-icon :icon="idCard" slot="start"></ion-icon>
-                <ion-label>
-                  <h3>Documento de Identidad</h3>
-                  <p>{{ employee.documentoIdentidad }}</p>
-                </ion-label>
-              </ion-item>
-              <ion-item v-if="employee.fechaNacimiento">
-                <ion-icon :icon="calendar" slot="start"></ion-icon>
-                <ion-label>
-                  <h3>Fecha de Nacimiento</h3>
-                  <p>{{ formatDate(employee.fechaNacimiento) }}</p>
-                </ion-label>
-              </ion-item>
-            </ion-list>
-          </ion-card-content>
-        </ion-card>
+        <!-- General Tab Content -->
+        <div v-show="selectedSegment === 'general'">
+          <!-- Tasks -->
+          <ion-card>
+            <ion-card-header>
+              <ion-card-title>
+                <ion-icon :icon="list" slot="start"></ion-icon>
+                Tareas
+              </ion-card-title>
+            </ion-card-header>
+            <ion-card-content>
+              <ion-button expand="block" @click="showTaskModal = true">
+                <ion-icon :icon="add" slot="start"></ion-icon>
+                Nueva tarea
+              </ion-button>
+              <EmployeeTaskList
+                :tasks="employee.tareas"
+                @toggle-status="onToggleTaskStatus"
+                @edit-task="onEditTask"
+                @delete-task="onDeleteTask"
+              />
+            </ion-card-content>
+          </ion-card>
 
-        <!-- Current Activity -->
-        <ion-card>
-          <ion-card-header>
-            <ion-card-title>
-              <ion-icon :icon="timeOutline" slot="start"></ion-icon>
-              Actividad actual
-            </ion-card-title>
-          </ion-card-header>
-          <ion-card-content>
-            <p v-if="employee.actividadActual">
-              {{ 'Ahora: "' + employee.actividadActual + '"' }}
-              <span
-                v-if="employee.actividadActualUpdatedAt"
-                class="activity-updated"
+          <!-- Current Activity -->
+          <ion-card>
+            <ion-card-header>
+              <ion-card-title>
+                <ion-icon :icon="timeOutline" slot="start"></ion-icon>
+                Actividad actual
+              </ion-card-title>
+            </ion-card-header>
+            <ion-card-content>
+              <p v-if="employee.actividadActual">
+                {{ 'Ahora: "' + employee.actividadActual + '"' }}
+                <span
+                  v-if="employee.actividadActualUpdatedAt"
+                  class="activity-updated"
+                >
+                  (actualizado
+                  {{ formatDate(employee.actividadActualUpdatedAt) }})
+                </span>
+              </p>
+              <p v-else>Sin actividad registrada</p>
+              <ion-button size="small" @click="promptActivity"
+                >Actualizar actividad</ion-button
               >
-                (actualizado
-                {{ formatDate(employee.actividadActualUpdatedAt) }})
-              </span>
-            </p>
-            <p v-else>Sin actividad registrada</p>
-            <ion-button size="small" @click="promptActivity"
-              >Actualizar actividad</ion-button
-            >
-          </ion-card-content>
-        </ion-card>
+            </ion-card-content>
+          </ion-card>
 
-        <!-- Skills -->
-        <ion-card v-if="employee.habilidades.length > 0">
-          <ion-card-header>
-            <ion-card-title>
-              <ion-icon :icon="star" slot="start"></ion-icon>
-              Habilidades
-            </ion-card-title>
-          </ion-card-header>
-          <ion-card-content>
-            <div class="skills-container">
-              <ion-chip
-                v-for="skill in employee.habilidades"
-                :key="skill"
-                color="primary"
-              >
-                <ion-label>{{ skill }}</ion-label>
-              </ion-chip>
-            </div>
-          </ion-card-content>
-        </ion-card>
-
-        <!-- Projects -->
-        <ion-card v-if="employee.proyectos.length > 0">
-          <ion-card-header>
-            <ion-card-title>
-              <ion-icon :icon="folder" slot="start"></ion-icon>
-              Proyectos
-            </ion-card-title>
-          </ion-card-header>
-          <ion-card-content>
-            <ion-list>
-              <ion-item v-for="project in employee.proyectos" :key="project">
+          <!-- Projects -->
+          <ion-card v-if="employee.proyectos.length > 0">
+            <ion-card-header>
+              <ion-card-title>
                 <ion-icon :icon="folder" slot="start"></ion-icon>
-                <ion-label>
-                  <p>{{ project }}</p>
-                </ion-label>
-              </ion-item>
-            </ion-list>
-          </ion-card-content>
-        </ion-card>
+                Proyectos
+              </ion-card-title>
+            </ion-card-header>
+            <ion-card-content>
+              <ion-list>
+                <ion-item v-for="project in employee.proyectos" :key="project">
+                  <ion-icon :icon="folder" slot="start"></ion-icon>
+                  <ion-label>
+                    <p>{{ project }}</p>
+                  </ion-label>
+                </ion-item>
+              </ion-list>
+            </ion-card-content>
+          </ion-card>
+        </div>
 
-        <!-- Notes -->
-        <ion-card v-if="employee.notas">
-          <ion-card-header>
-            <ion-card-title>
-              <ion-icon :icon="document" slot="start"></ion-icon>
-              Notas
-            </ion-card-title>
-          </ion-card-header>
-          <ion-card-content>
-            <p>{{ employee.notas }}</p>
-          </ion-card-content>
-        </ion-card>
+        <!-- Details Tab Content -->
+        <div v-show="selectedSegment === 'details'">
+          <!-- Contact Information -->
+          <ion-card>
+            <ion-card-header>
+              <ion-card-title>
+                <ion-icon :icon="call" slot="start"></ion-icon>
+                Información de Contacto
+              </ion-card-title>
+            </ion-card-header>
+            <ion-card-content>
+              <ion-list>
+                <ion-item>
+                  <ion-icon :icon="mail" slot="start"></ion-icon>
+                  <ion-label>
+                    <h3>Email</h3>
+                    <p>{{ employee.email }}</p>
+                  </ion-label>
+                </ion-item>
+                <ion-item>
+                  <ion-icon :icon="call" slot="start"></ion-icon>
+                  <ion-label>
+                    <h3>Teléfono</h3>
+                    <p>{{ employee.telefono }}</p>
+                  </ion-label>
+                </ion-item>
+                <ion-item v-if="employee.direccion">
+                  <ion-icon :icon="location" slot="start"></ion-icon>
+                  <ion-label>
+                    <h3>Dirección</h3>
+                    <p>{{ employee.direccion }}</p>
+                  </ion-label>
+                </ion-item>
+              </ion-list>
+            </ion-card-content>
+          </ion-card>
 
-        <!-- Evaluations -->
-        <ion-card v-if="employee.evaluaciones.length > 0">
-          <ion-card-header>
-            <ion-card-title>
-              <ion-icon :icon="analytics" slot="start"></ion-icon>
-              Evaluaciones
-            </ion-card-title>
-          </ion-card-header>
-          <ion-card-content>
-            <ion-list>
-              <ion-item
-                v-for="evaluation in employee.evaluaciones"
-                :key="evaluation.id"
+          <!-- Work Information -->
+          <ion-card>
+            <ion-card-header>
+              <ion-card-title>
+                <ion-icon :icon="briefcase" slot="start"></ion-icon>
+                Información Laboral
+              </ion-card-title>
+            </ion-card-header>
+            <ion-card-content>
+              <ion-list>
+                <ion-item>
+                  <ion-icon :icon="calendar" slot="start"></ion-icon>
+                  <ion-label>
+                    <h3>Fecha de Contratación</h3>
+                    <p>{{ formatDate(employee.fechaContratacion) }}</p>
+                  </ion-label>
+                </ion-item>
+                <ion-item>
+                  <ion-icon :icon="card" slot="start"></ion-icon>
+                  <ion-label>
+                    <h3>Salario</h3>
+                    <p>RD$ {{ formatCurrency(employee.salario) }}</p>
+                  </ion-label>
+                </ion-item>
+                <ion-item v-if="employee.supervisor">
+                  <ion-icon :icon="person" slot="start"></ion-icon>
+                  <ion-label>
+                    <h3>Supervisor</h3>
+                    <p>{{ getSupervisorName(employee.supervisor) }}</p>
+                  </ion-label>
+                </ion-item>
+                <ion-item v-if="employee.documentoIdentidad">
+                  <ion-icon :icon="idCard" slot="start"></ion-icon>
+                  <ion-label>
+                    <h3>Documento de Identidad</h3>
+                    <p>{{ employee.documentoIdentidad }}</p>
+                  </ion-label>
+                </ion-item>
+                <ion-item v-if="employee.fechaNacimiento">
+                  <ion-icon :icon="calendar" slot="start"></ion-icon>
+                  <ion-label>
+                    <h3>Fecha de Nacimiento</h3>
+                    <p>{{ formatDate(employee.fechaNacimiento) }}</p>
+                  </ion-label>
+                </ion-item>
+              </ion-list>
+            </ion-card-content>
+          </ion-card>
+
+          <!-- Skills -->
+          <ion-card v-if="employee.habilidades.length > 0">
+            <ion-card-header>
+              <ion-card-title>
+                <ion-icon :icon="star" slot="start"></ion-icon>
+                Habilidades
+              </ion-card-title>
+            </ion-card-header>
+            <ion-card-content>
+              <div class="skills-container">
+                <ion-chip
+                  v-for="skill in employee.habilidades"
+                  :key="skill"
+                  color="primary"
+                >
+                  <ion-label>{{ skill }}</ion-label>
+                </ion-chip>
+              </div>
+            </ion-card-content>
+          </ion-card>
+
+          <!-- Notes -->
+          <ion-card v-if="employee.notas">
+            <ion-card-header>
+              <ion-card-title>
+                <ion-icon :icon="document" slot="start"></ion-icon>
+                Notas
+              </ion-card-title>
+            </ion-card-header>
+            <ion-card-content>
+              <p>{{ employee.notas }}</p>
+            </ion-card-content>
+          </ion-card>
+
+          <!-- Evaluations -->
+          <ion-card v-if="employee.evaluaciones.length > 0">
+            <ion-card-header>
+              <ion-card-title>
+                <ion-icon :icon="analytics" slot="start"></ion-icon>
+                Evaluaciones
+              </ion-card-title>
+            </ion-card-header>
+            <ion-card-content>
+              <ion-list>
+                <ion-item
+                  v-for="evaluation in employee.evaluaciones"
+                  :key="evaluation.id"
+                >
+                  <ion-label>
+                    <h3>Evaluación - {{ formatDate(evaluation.fecha) }}</h3>
+                    <p>Calificación: {{ evaluation.calificacion }}/5</p>
+                    <p>{{ evaluation.comentarios }}</p>
+                    <div v-if="evaluation.areasFortaleza.length > 0">
+                      <h4>Áreas de Fortaleza:</h4>
+                      <ion-chip
+                        v-for="area in evaluation.areasFortaleza"
+                        :key="area"
+                        color="success"
+                        size="small"
+                      >
+                        <ion-label>{{ area }}</ion-label>
+                      </ion-chip>
+                    </div>
+                    <div v-if="evaluation.areasMejora.length > 0">
+                      <h4>Áreas de Mejora:</h4>
+                      <ion-chip
+                        v-for="area in evaluation.areasMejora"
+                        :key="area"
+                        color="warning"
+                        size="small"
+                      >
+                        <ion-label>{{ area }}</ion-label>
+                      </ion-chip>
+                    </div>
+                  </ion-label>
+                </ion-item>
+              </ion-list>
+            </ion-card-content>
+          </ion-card>
+
+          <!-- Quick Actions -->
+          <ion-card>
+            <ion-card-header>
+              <ion-card-title>Acciones Rápidas</ion-card-title>
+            </ion-card-header>
+            <ion-card-content>
+              <ion-button expand="block" @click="editEmployee">
+                <ion-icon :icon="create" slot="start"></ion-icon>
+                Editar Empleado
+              </ion-button>
+              <ion-button
+                expand="block"
+                color="danger"
+                @click="confirmDeleteEmployee"
               >
-                <ion-label>
-                  <h3>Evaluación - {{ formatDate(evaluation.fecha) }}</h3>
-                  <p>Calificación: {{ evaluation.calificacion }}/5</p>
-                  <p>{{ evaluation.comentarios }}</p>
-                  <div v-if="evaluation.areasFortaleza.length > 0">
-                    <h4>Áreas de Fortaleza:</h4>
-                    <ion-chip
-                      v-for="area in evaluation.areasFortaleza"
-                      :key="area"
-                      color="success"
-                      size="small"
-                    >
-                      <ion-label>{{ area }}</ion-label>
-                    </ion-chip>
-                  </div>
-                  <div v-if="evaluation.areasMejora.length > 0">
-                    <h4>Áreas de Mejora:</h4>
-                    <ion-chip
-                      v-for="area in evaluation.areasMejora"
-                      :key="area"
-                      color="warning"
-                      size="small"
-                    >
-                      <ion-label>{{ area }}</ion-label>
-                    </ion-chip>
-                  </div>
-                </ion-label>
-              </ion-item>
-            </ion-list>
-          </ion-card-content>
-        </ion-card>
-
-        <!-- Tasks -->
-        <ion-card>
-          <ion-card-header>
-            <ion-card-title>
-              <ion-icon :icon="folder" slot="start"></ion-icon>
-              Tareas
-            </ion-card-title>
-          </ion-card-header>
-          <ion-card-content>
-            <ion-button expand="block" @click="showTaskModal = true">
-              <ion-icon :icon="add" slot="start"></ion-icon>
-              Nueva tarea
-            </ion-button>
-            <EmployeeTaskList
-              :tasks="employee.tareas"
-              @toggle-status="onToggleTaskStatus"
-              @edit-task="onEditTask"
-              @delete-task="onDeleteTask"
-            />
-          </ion-card-content>
-        </ion-card>
+                <ion-icon :icon="trash" slot="start"></ion-icon>
+                Eliminar Empleado
+              </ion-button>
+            </ion-card-content>
+          </ion-card>
+        </div>
 
         <!-- Task Modal -->
         <ion-modal :is-open="showTaskModal" @didDismiss="closeTaskModal">
@@ -286,27 +323,6 @@
             />
           </ion-content>
         </ion-modal>
-
-        <!-- Quick Actions -->
-        <ion-card>
-          <ion-card-header>
-            <ion-card-title>Acciones Rápidas</ion-card-title>
-          </ion-card-header>
-          <ion-card-content>
-            <ion-button expand="block" @click="editEmployee">
-              <ion-icon :icon="create" slot="start"></ion-icon>
-              Editar Empleado
-            </ion-button>
-            <ion-button
-              expand="block"
-              color="danger"
-              @click="confirmDeleteEmployee"
-            >
-              <ion-icon :icon="trash" slot="start"></ion-icon>
-              Eliminar Empleado
-            </ion-button>
-          </ion-card-content>
-        </ion-card>
       </div>
 
       <!-- Loading State -->
@@ -365,11 +381,8 @@ import {
   IonLabel,
   IonAvatar,
   IonChip,
-  // duplicates removed below
-  IonInput,
-  IonTextarea,
-  IonSelect,
-  IonSelectOption,
+  IonSegment,
+  IonSegmentButton,
   IonModal,
   IonSpinner,
   alertController,
@@ -395,6 +408,7 @@ import {
   closeCircle,
   timeOutline,
   flag,
+  list,
 } from "ionicons/icons";
 import { ref, computed, onMounted } from "vue";
 import { useRoute, useRouter } from "vue-router";
@@ -414,6 +428,7 @@ const router = useRouter();
 // Reactive data
 const loading = ref(false);
 const showEditModal = ref(false);
+const selectedSegment = ref("general");
 
 // Computed properties
 const employeeId = computed(() => route.params.id as string);
@@ -459,6 +474,10 @@ const formatDate = (date: Date) => {
 
 const formatCurrency = (amount: number) => {
   return amount.toLocaleString("es-DO");
+};
+
+const onSegmentChange = (event: any) => {
+  selectedSegment.value = event.detail.value;
 };
 
 const editEmployee = () => {
@@ -688,5 +707,19 @@ ion-item p {
 
 ion-chip {
   margin: 4px;
+}
+
+ion-segment {
+  margin: 16px 0;
+  position: sticky;
+  top: 0;
+  background: var(--ion-background-color);
+  z-index: 10;
+}
+
+.activity-updated {
+  font-size: 0.8em;
+  color: var(--ion-color-medium);
+  font-style: italic;
 }
 </style>
