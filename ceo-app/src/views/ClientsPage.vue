@@ -29,8 +29,24 @@
           @ionInput="filterClients"
         ></ion-searchbar>
 
-        <!-- Filter Chips -->
-        <ion-segment v-model="selectedFilter" @ionChange="filterClients">
+        <!-- View Toggle -->
+        <ion-segment v-model="viewMode" @ionChange="onViewModeChange">
+          <ion-segment-button value="list">
+            <ion-icon :icon="list"></ion-icon>
+            <ion-label>Lista</ion-label>
+          </ion-segment-button>
+          <ion-segment-button value="kanban">
+            <ion-icon :icon="grid"></ion-icon>
+            <ion-label>Kanban</ion-label>
+          </ion-segment-button>
+        </ion-segment>
+
+        <!-- Filter Chips (only for list view) -->
+        <ion-segment
+          v-if="viewMode === 'list'"
+          v-model="selectedFilter"
+          @ionChange="filterClients"
+        >
           <ion-segment-button value="active">
             <ion-label>Activos</ion-label>
           </ion-segment-button>
@@ -39,53 +55,74 @@
           </ion-segment-button>
         </ion-segment>
 
-        <!-- Clients List -->
-        <ion-list>
-          <ion-item
-            v-for="cliente in filteredClients"
-            :key="cliente.id"
-            @click="viewClientDetail(cliente)"
-            button
-          >
-            <ion-avatar slot="start">
-              <ion-icon :icon="business" size="large"></ion-icon>
-            </ion-avatar>
+        <!-- List View -->
+        <div v-if="viewMode === 'list'">
+          <ion-list>
+            <ion-item
+              v-for="cliente in filteredClients"
+              :key="cliente.id"
+              @click="viewClientDetail(cliente)"
+              button
+            >
+              <ion-avatar slot="start">
+                <ion-icon :icon="business" size="large"></ion-icon>
+              </ion-avatar>
 
-            <ion-label>
-              <h2>{{ cliente.nombre }}</h2>
-              <p>{{ cliente.email }}</p>
-              <p v-if="cliente.montoPendiente > 0" class="pending-amount">
-                Pendiente: RD$ {{ formatCurrency(cliente.montoPendiente) }}
-              </p>
-              <ion-chip
-                color="primary"
-                @click.stop="quickBillClient(cliente)"
-                class="quick-bill-chip"
-              >
-                <ion-icon :icon="card"></ion-icon>
-                <ion-label>Facturar</ion-label>
-              </ion-chip>
-            </ion-label>
+              <ion-label>
+                <h2>{{ cliente.nombre }}</h2>
+                <p>{{ cliente.email }}</p>
+                <p v-if="cliente.montoPendiente > 0" class="pending-amount">
+                  Pendiente: RD$ {{ formatCurrency(cliente.montoPendiente) }}
+                </p>
+                <div class="chips-container">
+                  <ion-chip
+                    v-if="cliente.etapaVenta"
+                    :color="getStageColor(cliente.etapaVenta)"
+                    size="small"
+                  >
+                    {{ getStageName(cliente.etapaVenta) }}
+                  </ion-chip>
+                  <ion-chip
+                    color="primary"
+                    @click.stop="quickBillClient(cliente)"
+                    class="quick-bill-chip"
+                  >
+                    <ion-icon :icon="card"></ion-icon>
+                    <ion-label>Facturar</ion-label>
+                  </ion-chip>
+                </div>
+              </ion-label>
 
-            <ion-note slot="end">
-              <div v-if="cliente.cuotasVencidas > 0" class="overdue-badge">
-                {{ cliente.cuotasVencidas }} vencidas
-              </div>
-              <div v-else class="status-badge" :class="cliente.estado">
-                {{ cliente.estado }}
-              </div>
-            </ion-note>
-          </ion-item>
-        </ion-list>
+              <ion-note slot="end">
+                <div v-if="cliente.cuotasVencidas > 0" class="overdue-badge">
+                  {{ cliente.cuotasVencidas }} vencidas
+                </div>
+                <div v-else class="status-badge" :class="cliente.estado">
+                  {{ cliente.estado }}
+                </div>
+              </ion-note>
+            </ion-item>
+          </ion-list>
 
-        <!-- Empty State -->
-        <div v-if="filteredClients.length === 0" class="empty-state">
-          <ion-icon :icon="people" size="large"></ion-icon>
-          <h3>No hay clientes</h3>
-          <p>Agrega tu primer cliente para comenzar</p>
-          <ion-button @click="showAddClientModal = true">
-            Agregar Cliente
-          </ion-button>
+          <!-- Empty State for List -->
+          <div v-if="filteredClients.length === 0" class="empty-state">
+            <ion-icon :icon="people" size="large"></ion-icon>
+            <h3>No hay clientes</h3>
+            <p>Agrega tu primer cliente para comenzar</p>
+            <ion-button @click="showAddClientModal = true">
+              Agregar Cliente
+            </ion-button>
+          </div>
+        </div>
+
+        <!-- Kanban View -->
+        <div v-if="viewMode === 'kanban'" class="kanban-view">
+          <SalesKanban
+            :clients="filteredClients"
+            @client-stage-changed="onClientStageChanged"
+            @quick-bill="quickBillClient"
+            @edit-client="editClient"
+          />
         </div>
       </div>
     </ion-content>
@@ -158,13 +195,14 @@ import {
   IonModal,
   IonChip,
 } from "@ionic/vue";
-import { add, business, people, card } from "ionicons/icons";
+import { add, business, people, card, list, grid } from "ionicons/icons";
 import { ref, computed, onMounted } from "vue";
 import { useRouter } from "vue-router";
 import { useClientsStore } from "../stores/clients";
 import { useBillingStore } from "../stores/billing";
 import ClientForm from "../components/ClientForm.vue";
 import BillingForm from "../components/BillingForm.vue";
+import SalesKanban from "../components/SalesKanban.vue";
 
 // Stores
 const clientsStore = useClientsStore();
@@ -173,6 +211,7 @@ const billingStore = useBillingStore();
 // Reactive data
 const searchTerm = ref("");
 const selectedFilter = ref("active");
+const viewMode = ref("kanban");
 const showAddClientModal = ref(false);
 const showBillingModal = ref(false);
 const selectedClientForBilling = ref(null);
@@ -193,11 +232,13 @@ const filteredClients = computed(() => {
     );
   }
 
-  // Filter by status
-  if (selectedFilter.value === "active") {
-    filtered = filtered.filter((cliente) => cliente.estado === "activo");
-  } else if (selectedFilter.value === "inactive") {
-    filtered = filtered.filter((cliente) => cliente.estado === "inactivo");
+  // Filter by status (only in list view)
+  if (viewMode.value === "list") {
+    if (selectedFilter.value === "active") {
+      filtered = filtered.filter((cliente) => cliente.estado === "activo");
+    } else if (selectedFilter.value === "inactive") {
+      filtered = filtered.filter((cliente) => cliente.estado === "inactivo");
+    }
   }
 
   return filtered;
@@ -242,9 +283,52 @@ const formatCurrency = (amount: number) => {
   return amount.toLocaleString("es-DO");
 };
 
+const onViewModeChange = () => {
+  // Reset filters when switching views
+  if (viewMode.value === "kanban") {
+    selectedFilter.value = "all";
+    searchTerm.value = ""; // Clear search in kanban view
+  }
+};
+
+const onClientStageChanged = (client: any, newStage: string) => {
+  console.log(`Cliente ${client.nombre} movido a etapa: ${newStage}`);
+  // The store is already updated by the kanban component
+};
+
+const editClient = (client: any) => {
+  // TODO: Implement edit client functionality
+  console.log("Edit client:", client.nombre);
+};
+
+const getStageColor = (stage: string) => {
+  const stageColors = {
+    contacto: "primary",
+    propuesta: "warning",
+    negociacion: "tertiary",
+    cierre: "success",
+  };
+  return stageColors[stage as keyof typeof stageColors] || "medium";
+};
+
+const getStageName = (stage: string) => {
+  const stageNames = {
+    contacto: "Contacto",
+    propuesta: "Propuesta",
+    negociacion: "Negociación",
+    cierre: "Cierre",
+  };
+  return stageNames[stage as keyof typeof stageNames] || stage;
+};
+
 // Load initial data
 onMounted(async () => {
   await clientsStore.loadClients();
+  console.log("Clientes cargados:", clientsStore.clients.length);
+  console.log(
+    "Clientes con datos financieros:",
+    clientsStore.getClientsWithFinancialData.length
+  );
 });
 </script>
 
@@ -311,5 +395,18 @@ onMounted(async () => {
 
 .empty-state p {
   margin-bottom: 24px;
+}
+
+.kanban-view {
+  height: calc(100vh - 200px);
+  min-height: 600px;
+  overflow: hidden;
+}
+
+.chips-container {
+  display: flex;
+  gap: 8px;
+  margin-top: 8px;
+  flex-wrap: wrap;
 }
 </style>

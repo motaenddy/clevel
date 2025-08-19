@@ -16,6 +16,7 @@ export interface Client {
   notas: string;
   montoPendiente?: number;
   cuotasVencidas?: number;
+  etapaVenta?: 'contacto' | 'propuesta' | 'negociacion' | 'cierre';
 }
 
 export interface BillingItem {

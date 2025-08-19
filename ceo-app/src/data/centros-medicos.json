@@ -1,0 +1,433 @@
+{
+  "centrosMedicos": {
+    "cnt-001": {
+      "id": "cnt-001",
+      "informacionGeneral": {
+        "nombre": "CENTRO MEDICO CAROLINA DE JESUS",
+        "tipoEstablecimiento": "Centro Médico",
+        "especialidades": ["Medicina General", "Pediatría", "Ginecología"],
+        "numeroConsultorios": 8,
+        "numeroMedicos": 12,
+        "pacientesMensuales": 450,
+        "añosOperacion": 15
+      },
+      "contactos": [
+        {
+          "nombre": "Dra. Carolina Jesús",
+          "cargo": "Directora Médica",
+          "telefono": "809-555-0101",
+          "email": "carolina@centromedico.com",
+          "esDecisionPrincipal": true
+        },
+        {
+          "nombre": "Lic. Roberto Martínez",
+          "cargo": "Administrador",
+          "telefono": "809-555-0102",
+          "email": "admin@centromedico.com",
+          "esDecisionPrincipal": false
+        }
+      ],
+      "historialInteracciones": [
+        {
+          "fecha": "2024-08-15",
+          "tipo": "Llamada",
+          "descripcion": "Contacto inicial. Interés en digitalización de procesos",
+          "resultado": "Reunión programada"
+        },
+        {
+          "fecha": "2024-08-18",
+          "tipo": "Reunión",
+          "descripcion": "Presentación de servicios. Muy interesados en módulo de citas",
+          "resultado": "Solicitud de propuesta"
+        }
+      ],
+      "necesidades": [
+        "Sistema de gestión de citas",
+        "Historiales clínicos digitales",
+        "Facturación automatizada",
+        "Control de inventario médico"
+      ],
+      "presupuestoEstimado": 750000,
+      "probabilidadCierre": 65,
+      "fechaEstimadaCierre": "2024-09-15"
+    },
+
+    "cnt-002": {
+      "id": "cnt-002",
+      "informacionGeneral": {
+        "nombre": "CLINICA DENTAL SONRISA PERFECTA",
+        "tipoEstablecimiento": "Clínica Dental",
+        "especialidades": ["Odontología General", "Ortodoncia", "Endodoncia"],
+        "numeroConsultorios": 3,
+        "numeroMedicos": 4,
+        "pacientesMensuales": 180,
+        "añosOperacion": 8
+      },
+      "contactos": [
+        {
+          "nombre": "Dra. María Rodríguez",
+          "cargo": "Directora",
+          "telefono": "809-555-0201",
+          "email": "maria@sonrisaperfecta.com",
+          "esDecisionPrincipal": true
+        }
+      ],
+      "historialInteracciones": [
+        {
+          "fecha": "2024-08-18",
+          "tipo": "Referido",
+          "descripcion": "Referido por INEMED. Contacto inicial por WhatsApp",
+          "resultado": "Interés confirmado"
+        }
+      ],
+      "necesidades": [
+        "Sistema de citas online",
+        "Facturación dental especializada",
+        "Control de tratamientos"
+      ],
+      "presupuestoEstimado": 450000,
+      "probabilidadCierre": 40,
+      "fechaEstimadaCierre": "2024-10-01"
+    },
+
+    "prp-001": {
+      "id": "prp-001",
+      "informacionGeneral": {
+        "nombre": "INEMED INSTITUTO MEDICO",
+        "tipoEstablecimiento": "Instituto Médico",
+        "especialidades": ["Cardiología", "Neurología", "Medicina Interna", "Laboratorio"],
+        "numeroConsultorios": 15,
+        "numeroMedicos": 25,
+        "pacientesMensuales": 800,
+        "añosOperacion": 22
+      },
+      "contactos": [
+        {
+          "nombre": "Dr. Luis Fernández",
+          "cargo": "Director General",
+          "telefono": "809-555-0102",
+          "email": "director@inemed.com",
+          "esDecisionPrincipal": true
+        },
+        {
+          "nombre": "Ing. Ana Pérez",
+          "cargo": "Gerente de Sistemas",
+          "telefono": "809-555-0103",
+          "email": "sistemas@inemed.com",
+          "esDecisionPrincipal": false
+        }
+      ],
+      "historialInteracciones": [
+        {
+          "fecha": "2024-07-20",
+          "tipo": "Reunión",
+          "descripcion": "Presentación inicial del sistema ERP médico",
+          "resultado": "Solicitud de propuesta detallada"
+        },
+        {
+          "fecha": "2024-08-10",
+          "tipo": "Propuesta",
+          "descripcion": "Envío de propuesta técnica y económica completa",
+          "resultado": "En evaluación por comité"
+        }
+      ],
+      "necesidades": [
+        "ERP médico completo",
+        "Integración con equipos médicos",
+        "Sistema de facturación avanzado",
+        "Gestión de inventario farmacéutico",
+        "Reportes gerenciales"
+      ],
+      "presupuestoEstimado": 850000,
+      "probabilidadCierre": 75,
+      "fechaEstimadaCierre": "2024-09-01"
+    },
+
+    "prp-002": {
+      "id": "prp-002",
+      "informacionGeneral": {
+        "nombre": "CENTRO OFTALMOLOGICO DEL CARIBE",
+        "tipoEstablecimiento": "Centro Especializado",
+        "especialidades": ["Oftalmología", "Cirugía Ocular", "Optometría"],
+        "numeroConsultorios": 6,
+        "numeroMedicos": 8,
+        "pacientesMensuales": 320,
+        "añosOperacion": 12
+      },
+      "contactos": [
+        {
+          "nombre": "Dr. Carlos Mendoza",
+          "cargo": "Director Médico",
+          "telefono": "809-555-0301",
+          "email": "carlos@oftalmologico.com",
+          "esDecisionPrincipal": true
+        }
+      ],
+      "historialInteracciones": [
+        {
+          "fecha": "2024-07-25",
+          "tipo": "Reunión",
+          "descripcion": "Evaluación de necesidades específicas oftalmológicas",
+          "resultado": "Propuesta personalizada solicitada"
+        },
+        {
+          "fecha": "2024-08-12",
+          "tipo": "Propuesta",
+          "descripcion": "Propuesta con módulos especializados para oftalmología",
+          "resultado": "Reunión de seguimiento programada"
+        }
+      ],
+      "necesidades": [
+        "Historiales oftalmológicos especializados",
+        "Sistema de citas online",
+        "Integración con equipos de diagnóstico",
+        "Facturación de cirugías"
+      ],
+      "presupuestoEstimado": 650000,
+      "probabilidadCierre": 60,
+      "fechaEstimadaCierre": "2024-09-10"
+    },
+
+    "neg-001": {
+      "id": "neg-001",
+      "informacionGeneral": {
+        "nombre": "CLINICA DR. MONTESINO",
+        "tipoEstablecimiento": "Clínica General",
+        "especialidades": ["Medicina General", "Cirugía Menor", "Emergencias"],
+        "numeroConsultorios": 10,
+        "numeroMedicos": 15,
+        "pacientesMensuales": 600,
+        "añosOperacion": 18
+      },
+      "contactos": [
+        {
+          "nombre": "Dr. Rafael Montesino",
+          "cargo": "Director Propietario",
+          "telefono": "809-555-0104",
+          "email": "dr.montesino@clinicamontesino.com",
+          "esDecisionPrincipal": true
+        }
+      ],
+      "historialInteracciones": [
+        {
+          "fecha": "2024-06-15",
+          "tipo": "Reunión",
+          "descripcion": "Presentación completa del sistema",
+          "resultado": "Interés confirmado"
+        },
+        {
+          "fecha": "2024-07-20",
+          "tipo": "Propuesta",
+          "descripcion": "Propuesta inicial enviada",
+          "resultado": "Solicitud de ajustes en términos de pago"
+        },
+        {
+          "fecha": "2024-08-10",
+          "tipo": "Negociación",
+          "descripcion": "Discusión de términos de pago y descuentos",
+          "resultado": "Contrapropuesta en evaluación"
+        }
+      ],
+      "necesidades": [
+        "Sistema integral de gestión",
+        "Módulo de emergencias",
+        "Facturación por seguros",
+        "Control de medicamentos"
+      ],
+      "presupuestoEstimado": 720000,
+      "probabilidadCierre": 80,
+      "fechaEstimadaCierre": "2024-08-30"
+    },
+
+    "neg-002": {
+      "id": "neg-002",
+      "informacionGeneral": {
+        "nombre": "POLICLINICA METROPOLITANA",
+        "tipoEstablecimiento": "Policlínica",
+        "especialidades": ["Múltiples Especialidades", "Laboratorio", "Radiología", "Farmacia"],
+        "numeroConsultorios": 20,
+        "numeroMedicos": 35,
+        "pacientesMensuales": 1200,
+        "añosOperacion": 25
+      },
+      "contactos": [
+        {
+          "nombre": "Lic. Patricia Jiménez",
+          "cargo": "Gerente General",
+          "telefono": "809-555-0401",
+          "email": "gerencia@polimetropolitana.com",
+          "esDecisionPrincipal": true
+        },
+        {
+          "nombre": "Ing. Miguel Santos",
+          "cargo": "Jefe de IT",
+          "telefono": "809-555-0402",
+          "email": "it@polimetropolitana.com",
+          "esDecisionPrincipal": false
+        }
+      ],
+      "historialInteracciones": [
+        {
+          "fecha": "2024-06-10",
+          "tipo": "Reunión",
+          "descripcion": "Evaluación de sistema actual y necesidades",
+          "resultado": "Propuesta de migración solicitada"
+        },
+        {
+          "fecha": "2024-07-15",
+          "tipo": "Propuesta",
+          "descripcion": "Propuesta de implementación gradual",
+          "resultado": "Negociación de cronograma iniciada"
+        }
+      ],
+      "necesidades": [
+        "Migración de sistema legacy",
+        "Integración con laboratorio existente",
+        "Capacitación extensiva",
+        "Soporte 24/7"
+      ],
+      "presupuestoEstimado": 1200000,
+      "probabilidadCierre": 85,
+      "fechaEstimadaCierre": "2024-09-05"
+    },
+
+    "cls-001": {
+      "id": "cls-001",
+      "informacionGeneral": {
+        "nombre": "HOSPITAL GENERAL DEL NORTE",
+        "tipoEstablecimiento": "Hospital General",
+        "especialidades": ["Todas las especialidades", "Emergencias 24/7", "Cirugía", "UCI"],
+        "numeroConsultorios": 40,
+        "numeroMedicos": 80,
+        "pacientesMensuales": 2500,
+        "añosOperacion": 30
+      },
+      "contactos": [
+        {
+          "nombre": "Dr. Eduardo Ramírez",
+          "cargo": "Director Médico",
+          "telefono": "809-555-0105",
+          "email": "director@hospitalnorte.com",
+          "esDecisionPrincipal": true
+        },
+        {
+          "nombre": "Lic. Carmen Valdez",
+          "cargo": "Gerente Administrativa",
+          "telefono": "809-555-0106",
+          "email": "admin@hospitalnorte.com",
+          "esDecisionPrincipal": true
+        }
+      ],
+      "historialInteracciones": [
+        {
+          "fecha": "2024-05-01",
+          "tipo": "Reunión",
+          "descripcion": "Presentación para hospital completo",
+          "resultado": "Interés en sistema integral"
+        },
+        {
+          "fecha": "2024-06-15",
+          "tipo": "Propuesta",
+          "descripcion": "Propuesta completa para hospital",
+          "resultado": "Aprobación de junta directiva"
+        },
+        {
+          "fecha": "2024-08-15",
+          "tipo": "Contrato",
+          "descripcion": "Revisión final de documentos legales",
+          "resultado": "Firma programada para 21/08"
+        }
+      ],
+      "necesidades": [
+        "Sistema hospitalario completo",
+        "Integración con equipos médicos",
+        "Gestión de camas y quirófanos",
+        "Facturación compleja",
+        "Reportes regulatorios"
+      ],
+      "presupuestoEstimado": 2500000,
+      "probabilidadCierre": 95,
+      "fechaEstimadaCierre": "2024-08-21"
+    },
+
+    "cls-002": {
+      "id": "cls-002",
+      "informacionGeneral": {
+        "nombre": "CENTRO DE ESPECIALIDADES MEDICAS DEL ESTE",
+        "tipoEstablecimiento": "Centro de Especialidades",
+        "especialidades": ["Cardiología", "Neurología", "Radiología", "Medicina Nuclear"],
+        "numeroConsultorios": 12,
+        "numeroMedicos": 20,
+        "pacientesMensuales": 650,
+        "añosOperacion": 10
+      },
+      "contactos": [
+        {
+          "nombre": "Dr. José Herrera",
+          "cargo": "Director Ejecutivo",
+          "telefono": "809-555-0501",
+          "email": "director@cemeste.com",
+          "esDecisionPrincipal": true
+        }
+      ],
+      "historialInteracciones": [
+        {
+          "fecha": "2024-04-20",
+          "tipo": "Reunión",
+          "descripcion": "Evaluación de necesidades especializadas",
+          "resultado": "Propuesta personalizada solicitada"
+        },
+        {
+          "fecha": "2024-06-01",
+          "tipo": "Propuesta",
+          "descripcion": "Sistema especializado para centro médico",
+          "resultado": "Aprobación y negociación de términos"
+        },
+        {
+          "fecha": "2024-08-10",
+          "tipo": "Contrato",
+          "descripcion": "Documentos en revisión legal final",
+          "resultado": "Implementación programada septiembre"
+        }
+      ],
+      "necesidades": [
+        "Módulos especializados por área",
+        "Integración con equipos de diagnóstico",
+        "Sistema de reportes médicos",
+        "Facturación especializada"
+      ],
+      "presupuestoEstimado": 1800000,
+      "probabilidadCierre": 90,
+      "fechaEstimadaCierre": "2024-09-01"
+    }
+  },
+
+  "metricas": {
+    "totalProspectos": 8,
+    "valorTotalPipeline": 9965000,
+    "promedioTiempoCierre": 120,
+    "tasaConversionGeneral": 0.72,
+    "etapas": {
+      "contacto": {
+        "cantidad": 2,
+        "valor": 1200000,
+        "tasaConversion": 0.45
+      },
+      "propuesta": {
+        "cantidad": 2,
+        "valor": 1500000,
+        "tasaConversion": 0.65
+      },
+      "negociacion": {
+        "cantidad": 2,
+        "valor": 1920000,
+        "tasaConversion": 0.82
+      },
+      "cierre": {
+        "cantidad": 2,
+        "valor": 4300000,
+        "tasaConversion": 0.92
+      }
+    }
+  }
+}
