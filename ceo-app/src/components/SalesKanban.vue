@@ -91,6 +91,20 @@
             </div>
 
             <div class="card-actions">
+              <!-- Indicador de cotizador disponible -->
+              <ion-chip
+                v-if="
+                  client.etapaVenta === 'propuesta' ||
+                  client.etapaVenta === 'negociacion'
+                "
+                color="tertiary"
+                size="small"
+                class="quoter-indicator"
+              >
+                <ion-icon :icon="calculator" size="small"></ion-icon>
+                <ion-label>Cotizador</ion-label>
+              </ion-chip>
+
               <ion-button
                 size="small"
                 fill="clear"
@@ -132,6 +146,7 @@ import {
   people,
   cash,
   trendingUp,
+  calculator,
 } from "ionicons/icons";
 import { computed } from "vue";
 import { useRouter } from "vue-router";
@@ -377,10 +392,34 @@ const getCentroDetallado = (clientId: string) => {
 
 .card-actions {
   display: flex;
-  justify-content: flex-end;
+  justify-content: space-between;
+  align-items: center;
   gap: 4px;
   border-top: 1px solid var(--ion-color-light);
   padding-top: 8px;
+}
+
+.quoter-indicator {
+  font-size: 0.7rem;
+  height: 24px;
+  animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+  0% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.7;
+  }
+  100% {
+    opacity: 1;
+  }
+}
+
+.card-actions .action-buttons {
+  display: flex;
+  gap: 4px;
 }
 
 .empty-column {

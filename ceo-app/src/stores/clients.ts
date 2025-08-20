@@ -151,42 +151,43 @@ export const useClientsStore = defineStore('clients', () => {
 
   const getSampleClients = (): Client[] => {
     return [
-      // ETAPA CONTACTO - Centros recién identificados
+      // Fila 1 - Centro medico Dr Perez (ROJO)
       {
-        id: 'cnt-001',
-        nombre: 'CENTRO MEDICO CAROLINA DE JESUS',
-        email: 'carolina@centromedico.com',
-        telefono: '809-555-0101',
-        direccion: 'Av. Winston Churchill #47, Piantini, Santo Domingo',
+        id: 'cmp-001',
+        nombre: 'Centro medico Dr Perez',
+        email: 'drperez@centromedico.com',
+        telefono: '809-555-0001',
+        direccion: 'Santo Domingo',
         estado: 'activo',
-        notas: 'Contacto inicial realizado. Centro especializado en medicina general y pediatría. Interesados en sistema de gestión completo. Próxima reunión programada para el 25/08.',
+        notas: 'Propuesta enviada',
         montoPendiente: 0,
         cuotasVencidas: 0,
-        etapaVenta: 'contacto',
-        fechaCreacion: new Date('2024-08-15'),
-        // Nuevos campos del Excel
+        etapaVenta: 'propuesta',
+        fechaCreacion: new Date('2024-08-21'),
         cotizado: 45000,
         sistema: 'CLI-ADM',
-        contactoCliente: 'Dra Edilia',
+        contactoCliente: 'DRA Edilia',
         responsable: 'GR',
         status: 'Propuesta enviada',
         fechaUltimaActualizacion: new Date('2024-08-21'),
-        proximoPaso: 'en espera de respuesta de aprobación',
+        proximoPaso: 'en espera de respuesta de aprobacion',
         fechaProximoPaso: new Date('2024-08-24'),
         colorStatus: 'rojo'
       },
+
+      // Fila 2 - Policlinica Bautista (VERDE)
       {
-        id: 'cnt-002', 
-        nombre: 'Dr Grullon',
-        email: 'info@drgrullon.com',
-        telefono: '809-555-0201',
-        direccion: 'Santiago',
+        id: 'pb-001',
+        nombre: 'Policlinica Bautista',
+        email: 'info@policlinicabautista.com',
+        telefono: '809-555-0002',
+        direccion: 'Santo Domingo',
         estado: 'activo',
         notas: 'Datos actualizados',
         montoPendiente: 0,
         cuotasVencidas: 0,
-        etapaVenta: 'propuesta',
-        fechaCreacion: new Date('2024-08-18'),
+        etapaVenta: 'cierre',
+        fechaCreacion: new Date('2024-08-12'),
         cotizado: 90000,
         sistema: 'CLI-ADM',
         contactoCliente: 'Dr Grullon',
@@ -198,19 +199,19 @@ export const useClientsStore = defineStore('clients', () => {
         colorStatus: 'verde'
       },
 
-      // ETAPA PROPUESTA - Centros evaluando nuestra oferta
+      // Fila 3 - Dr Grullon (VERDE)
       {
-        id: 'prp-001',
-        nombre: 'Mao clinic',
-        email: 'info@maoclinic.com',
-        telefono: '809-555-0102',
-        direccion: 'Mao',
+        id: 'dg-001',
+        nombre: 'Dr Grullon',
+        email: 'drgrullon@clinica.com',
+        telefono: '809-555-0003',
+        direccion: 'Santiago',
         estado: 'activo',
         notas: 'enviar levantamiento tecnico',
         montoPendiente: 0,
         cuotasVencidas: 0,
         etapaVenta: 'propuesta',
-        fechaCreacion: new Date('2024-07-20'),
+        fechaCreacion: new Date('2024-08-18'),
         cotizado: 90000,
         sistema: 'CLI-ADM',
         contactoCliente: 'ING. Carlos Manuel',
@@ -219,20 +220,46 @@ export const useClientsStore = defineStore('clients', () => {
         fechaUltimaActualizacion: new Date('2024-08-18'),
         proximoPaso: 'inicio de entrenamientos',
         fechaProximoPaso: new Date('2024-08-14'),
-        colorStatus: 'amarillo'
+        colorStatus: 'verde'
       },
+
+      // Fila 4 - Mao clinic (VERDE)
       {
-        id: 'prp-002',
+        id: 'mc-001',
+        nombre: 'Mao clinic',
+        email: 'info@maoclinic.com',
+        telefono: '809-555-0004',
+        direccion: 'Mao',
+        estado: 'activo',
+        notas: 'implementacion de sistema de citas',
+        montoPendiente: 0,
+        cuotasVencidas: 0,
+        etapaVenta: 'negociacion',
+        fechaCreacion: new Date('2024-08-19'),
+        cotizado: 90000,
+        sistema: 'CLI-ADM',
+        contactoCliente: 'Dr Sosa',
+        responsable: 'GR',
+        status: 'implementacion de sistema de citas',
+        fechaUltimaActualizacion: new Date('2024-08-19'),
+        proximoPaso: 'implementacion de sistema de citas',
+        fechaProximoPaso: new Date('2024-08-14'),
+        colorStatus: 'verde'
+      },
+
+      // Fila 5 - Centro Galeno Integral (Herrera) (ROJO)
+      {
+        id: 'cgi-001',
         nombre: 'Centro Galeno Integral (Herrera)',
-        email: 'admin@galenoint.com',
-        telefono: '809-555-0301',
+        email: 'galeno@herrera.com',
+        telefono: '809-555-0005',
         direccion: 'Herrera',
         estado: 'activo',
         notas: 'estan en proceso de cambio de administracion',
         montoPendiente: 0,
         cuotasVencidas: 0,
         etapaVenta: 'negociacion',
-        fechaCreacion: new Date('2024-07-25'),
+        fechaCreacion: new Date('2024-08-17'),
         cotizado: 90000,
         sistema: 'CLI-ADM',
         contactoCliente: 'Dr Lenin Luna',
@@ -244,20 +271,20 @@ export const useClientsStore = defineStore('clients', () => {
         colorStatus: 'rojo'
       },
 
-      // ETAPA NEGOCIACION - Centros negociando términos y condiciones
+      // Fila 6 - Hospital Estrella Urea (ROJO)
       {
-        id: 'neg-001',
+        id: 'heu-001',
         nombre: 'Hospital Estrella Urea',
         email: 'info@estrellaurea.com',
-        telefono: '809-555-0104',
+        telefono: '809-555-0006',
         direccion: 'Santiago',
         estado: 'activo',
         notas: 'Llame al ing Henry me dijo que me iba a enviar la propuesta el 8 de enero',
         montoPendiente: 0,
         cuotasVencidas: 0,
         etapaVenta: 'negociacion',
-        fechaCreacion: new Date('2024-06-15'),
-        cotizado: 150000,
+        fechaCreacion: new Date('2024-08-17'),
+        cotizado: 160000,
         sistema: 'CLI-ADM',
         contactoCliente: 'Ing Henry Cornelio',
         responsable: 'GR',
@@ -267,18 +294,20 @@ export const useClientsStore = defineStore('clients', () => {
         fechaProximoPaso: new Date('2024-08-13'),
         colorStatus: 'rojo'
       },
+
+      // Fila 7 - Hospital Pedro Emilio Marchena (ROJO)
       {
-        id: 'neg-002',
+        id: 'hpem-001',
         nombre: 'Hospital Pedro Emilio Marchena',
-        email: 'info@marchena.com',
-        telefono: '809-555-0401',
+        email: 'marchena@hospital.com',
+        telefono: '809-555-0007',
         direccion: 'Bonao',
         estado: 'activo',
         notas: 'se les envio una propuesta actualizada',
         montoPendiente: 0,
         cuotasVencidas: 0,
         etapaVenta: 'negociacion',
-        fechaCreacion: new Date('2024-06-10'),
+        fechaCreacion: new Date('2024-08-13'),
         cotizado: 160000,
         sistema: 'CLI-ADM',
         contactoCliente: 'Dr Genao',
@@ -290,19 +319,19 @@ export const useClientsStore = defineStore('clients', () => {
         colorStatus: 'rojo'
       },
 
-      // ETAPA CIERRE - Centros listos para firmar contrato
+      // Fila 8 - COCEN SFM (VERDE)
       {
-        id: 'cls-001',
+        id: 'cocen-001',
         nombre: 'COCEN SFM',
-        email: 'info@cocensfm.com',
-        telefono: '809-555-0105',
+        email: 'cocen@sfm.com',
+        telefono: '809-555-0008',
         direccion: 'San Francisco de Macoris',
         estado: 'activo',
         notas: 'contacto enviado',
         montoPendiente: 0,
         cuotasVencidas: 0,
         etapaVenta: 'contacto',
-        fechaCreacion: new Date('2024-05-01'),
+        fechaCreacion: new Date('2024-08-09'),
         cotizado: 25000,
         sistema: 'CLI-ADM',
         contactoCliente: 'LIC GAMALIEL',
@@ -313,18 +342,20 @@ export const useClientsStore = defineStore('clients', () => {
         fechaProximoPaso: new Date('2024-08-27'),
         colorStatus: 'verde'
       },
+
+      // Fila 9 - Dispensario Medico parroquial san agustin (AMARILLO)
       {
-        id: 'cls-002',
+        id: 'dm-001',
         nombre: 'Dispensario Medico parroquial san agustin',
-        email: 'info@sanagustin.com',
-        telefono: '809-555-0501',
+        email: 'dispensario@sanagustin.com',
+        telefono: '809-555-0009',
         direccion: 'Villa Altagracia',
         estado: 'activo',
         notas: 'inicio la implementacion',
         montoPendiente: 0,
         cuotasVencidas: 0,
         etapaVenta: 'cierre',
-        fechaCreacion: new Date('2024-04-20'),
+        fechaCreacion: new Date('2024-08-21'),
         cotizado: 25000,
         sistema: 'CLI-ADM',
         contactoCliente: 'Pedro Gregorio Rivas',
@@ -334,6 +365,104 @@ export const useClientsStore = defineStore('clients', () => {
         proximoPaso: 'cierre de implementacion',
         fechaProximoPaso: new Date('2024-08-23'),
         colorStatus: 'amarillo'
+      },
+
+      // Filas AZULES (Implementados)
+      // Fila 10 - Clinica Corominas Pepin (AZUL)
+      {
+        id: 'ccp-001',
+        nombre: 'Clinica Corominas Pepin',
+        email: 'corominas@pepin.com',
+        telefono: '809-555-0010',
+        direccion: 'Santo Domingo',
+        estado: 'activo',
+        notas: 'implementado y funcionando',
+        montoPendiente: 0,
+        cuotasVencidas: 0,
+        etapaVenta: 'cierre',
+        fechaCreacion: new Date('2024-08-20'),
+        cotizado: 90000,
+        sistema: 'CLI-ADM',
+        contactoCliente: 'Dr Corominas',
+        responsable: 'GR',
+        status: 'implementado y funcionando',
+        fechaUltimaActualizacion: new Date('2024-08-20'),
+        proximoPaso: 'seguimiento mensual',
+        fechaProximoPaso: new Date('2024-09-20'),
+        colorStatus: 'azul'
+      },
+
+      // Fila 11 - Centro Medico Familiar Espaillat (AZUL)
+      {
+        id: 'cmfe-001',
+        nombre: 'Centro Medico Familiar Espaillat',
+        email: 'familiar@espaillat.com',
+        telefono: '809-555-0011',
+        direccion: 'Espaillat',
+        estado: 'activo',
+        notas: 'sistema funcionando correctamente',
+        montoPendiente: 0,
+        cuotasVencidas: 0,
+        etapaVenta: 'cierre',
+        fechaCreacion: new Date('2024-08-15'),
+        cotizado: 90000,
+        sistema: 'CLI-ADM',
+        contactoCliente: 'Dr Espaillat',
+        responsable: 'GR',
+        status: 'sistema funcionando correctamente',
+        fechaUltimaActualizacion: new Date('2024-08-15'),
+        proximoPaso: 'revision trimestral',
+        fechaProximoPaso: new Date('2024-11-15'),
+        colorStatus: 'azul'
+      },
+
+      // Filas ROJAS adicionales
+      // Fila 12 - Centro Medico Familiar Bonao (ROJO)
+      {
+        id: 'cmfb-001',
+        nombre: 'Centro Medico Familiar Bonao',
+        email: 'familiar@bonao.com',
+        telefono: '809-555-0012',
+        direccion: 'Bonao',
+        estado: 'activo',
+        notas: 'esperando respuesta de propuesta',
+        montoPendiente: 0,
+        cuotasVencidas: 0,
+        etapaVenta: 'propuesta',
+        fechaCreacion: new Date('2024-08-10'),
+        cotizado: 90000,
+        sistema: 'CLI-ADM',
+        contactoCliente: 'Dr Bonao',
+        responsable: 'GR',
+        status: 'esperando respuesta de propuesta',
+        fechaUltimaActualizacion: new Date('2024-08-10'),
+        proximoPaso: 'seguimiento de propuesta',
+        fechaProximoPaso: new Date('2024-08-30'),
+        colorStatus: 'rojo'
+      },
+
+      // Fila 13 - Centro Medico Familiar Azua (ROJO)
+      {
+        id: 'cmfa-001',
+        nombre: 'Centro Medico Familiar Azua',
+        email: 'familiar@azua.com',
+        telefono: '809-555-0013',
+        direccion: 'Azua',
+        estado: 'activo',
+        notas: 'revision de propuesta pendiente',
+        montoPendiente: 0,
+        cuotasVencidas: 0,
+        etapaVenta: 'propuesta',
+        fechaCreacion: new Date('2024-08-05'),
+        cotizado: 90000,
+        sistema: 'CLI-ADM',
+        contactoCliente: 'Dr Azua',
+        responsable: 'GR',
+        status: 'revision de propuesta pendiente',
+        fechaUltimaActualizacion: new Date('2024-08-05'),
+        proximoPaso: 'llamada de seguimiento',
+        fechaProximoPaso: new Date('2024-08-28'),
+        colorStatus: 'rojo'
       }
     ]
   }

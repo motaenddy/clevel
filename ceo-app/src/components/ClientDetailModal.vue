@@ -249,6 +249,28 @@
         </ion-card-content>
       </ion-card>
 
+      <!-- Cotizador (solo para etapas de propuesta y negociación) -->
+      <ion-card v-if="shouldShowQuoter" class="quoter-card">
+        <ion-card-header>
+          <ion-card-title>
+            <ion-icon :icon="calculator"></ion-icon>
+            Cotizador Automático
+          </ion-card-title>
+          <ion-card-subtitle>
+            💡 Genera una cotización detallada para {{ editableClient.nombre }}.
+            La cotización se actualizará automáticamente en el campo "Monto
+            Cotizado".
+          </ion-card-subtitle>
+        </ion-card-header>
+        <ion-card-content>
+          <QuoterComponent
+            :client-name="editableClient.nombre"
+            :current-cotizado="editableClient.cotizado"
+            @quote-updated="onQuoteUpdated"
+          />
+        </ion-card-content>
+      </ion-card>
+
       <!-- Notas -->
       <ion-card>
         <ion-card-header>
@@ -322,6 +344,7 @@ import {
   IonSelectOption,
   IonDatetime,
   IonDatetimeButton,
+  IonCardSubtitle,
 } from "@ionic/vue";
 import {
   close,
@@ -333,9 +356,11 @@ import {
   document,
   create,
   checkmark,
+  calculator,
 } from "ionicons/icons";
-import { ref, watch } from "vue";
+import { ref, watch, computed } from "vue";
 import type { Client } from "../services/StorageService";
+import QuoterComponent from "./QuoterComponent.vue";
 
 // Props
 interface Props {
@@ -423,6 +448,41 @@ const getStatusLabel = (colorStatus?: string) => {
     morado: "Implementación Concluida",
   };
   return labelMap[colorStatus as keyof typeof labelMap] || "Sin Status";
+};
+
+// Computed property to show quoter only for relevant stages
+const shouldShowQuoter = computed(() => {
+  return (
+    editableClient.value.etapaVenta === "propuesta" ||
+    editableClient.value.etapaVenta === "negociacion"
+  );
+});
+
+// Handle quote updates from QuoterComponent
+const onQuoteUpdated = (amount: number, details: any) => {
+  editableClient.value.cotizado = amount;
+
+  // Update status to reflect that a new quote was generated
+  if (editableClient.value.etapaVenta === "propuesta") {
+    editableClient.value.status = `Nueva cotización generada: RD$ ${formatCurrency(
+      amount
+    )}`;
+  } else if (editableClient.value.etapaVenta === "negociacion") {
+    editableClient.value.status = `Cotización actualizada en negociación: RD$ ${formatCurrency(
+      amount
+    )}`;
+  }
+
+  // Update next step
+  editableClient.value.proximoPaso = "Revisar cotización generada con cliente";
+  editableClient.value.fechaProximoPaso = new Date(
+    Date.now() + 7 * 24 * 60 * 60 * 1000
+  ); // 7 days from now
+
+  // Update last modification date
+  editableClient.value.fechaUltimaActualizacion = new Date();
+
+  console.log("Cotización actualizada:", { amount, details });
 };
 </script>
 
@@ -514,6 +574,32 @@ const getStatusLabel = (colorStatus?: string) => {
   display: flex;
   flex-direction: column;
   gap: 12px;
+}
+
+/* Quoter integration styles */
+.quoter-card {
+  border: 2px solid var(--ion-color-primary);
+  border-radius: 12px;
+  background: linear-gradient(
+    135deg,
+    var(--ion-color-primary-tint) 0%,
+    var(--ion-color-light) 100%
+  );
+}
+
+.quoter-card ion-card-header {
+  background: var(--ion-color-primary);
+  color: white;
+  border-radius: 8px 8px 0 0;
+}
+
+.quoter-card ion-card-title {
+  color: white;
+}
+
+.quoter-card ion-card-subtitle {
+  color: var(--ion-color-primary-contrast);
+  opacity: 0.8;
 }
 
 /* Responsive design */

@@ -1,55 +1,41 @@
 {
   "centrosMedicos": {
-    "cnt-001": {
-      "id": "cnt-001",
+    "cmp-001": {
+      "id": "cmp-001",
       "informacionGeneral": {
-        "nombre": "CENTRO MEDICO CAROLINA DE JESUS",
+        "nombre": "Centro medico Dr Perez",
         "tipoEstablecimiento": "Centro Médico",
-        "especialidades": ["Medicina General", "Pediatría", "Ginecología"],
-        "numeroConsultorios": 8,
-        "numeroMedicos": 12,
-        "pacientesMensuales": 450,
-        "añosOperacion": 15
+        "especialidades": ["Medicina General", "Consulta Externa"],
+        "numeroConsultorios": 6,
+        "numeroMedicos": 8,
+        "pacientesMensuales": 300,
+        "añosOperacion": 12
       },
       "contactos": [
         {
-          "nombre": "Dra. Carolina Jesús",
+          "nombre": "DRA Edilia",
           "cargo": "Directora Médica",
-          "telefono": "809-555-0101",
-          "email": "carolina@centromedico.com",
+          "telefono": "809-555-0001",
+          "email": "drperez@centromedico.com",
           "esDecisionPrincipal": true
-        },
-        {
-          "nombre": "Lic. Roberto Martínez",
-          "cargo": "Administrador",
-          "telefono": "809-555-0102",
-          "email": "admin@centromedico.com",
-          "esDecisionPrincipal": false
         }
       ],
       "historialInteracciones": [
         {
-          "fecha": "2024-08-15",
-          "tipo": "Llamada",
-          "descripcion": "Contacto inicial. Interés en digitalización de procesos",
-          "resultado": "Reunión programada"
-        },
-        {
-          "fecha": "2024-08-18",
-          "tipo": "Reunión",
-          "descripcion": "Presentación de servicios. Muy interesados en módulo de citas",
-          "resultado": "Solicitud de propuesta"
+          "fecha": "2024-08-21",
+          "tipo": "Propuesta",
+          "descripcion": "Propuesta enviada con sistema CLI-ADM",
+          "resultado": "En espera de respuesta"
         }
       ],
       "necesidades": [
-        "Sistema de gestión de citas",
-        "Historiales clínicos digitales",
-        "Facturación automatizada",
-        "Control de inventario médico"
+        "Sistema CLI-ADM",
+        "Gestión de consultas",
+        "Facturación básica"
       ],
-      "presupuestoEstimado": 750000,
-      "probabilidadCierre": 65,
-      "fechaEstimadaCierre": "2024-09-15"
+      "presupuestoEstimado": 45000,
+      "probabilidadCierre": 60,
+      "fechaEstimadaCierre": "2024-08-24"
     },
 
     "cnt-002": {
@@ -403,30 +389,30 @@
   },
 
   "metricas": {
-    "totalProspectos": 8,
-    "valorTotalPipeline": 9965000,
-    "promedioTiempoCierre": 120,
-    "tasaConversionGeneral": 0.72,
+    "totalProspectos": 13,
+    "valorTotalPipeline": 1045000,
+    "promedioTiempoCierre": 90,
+    "tasaConversionGeneral": 0.68,
     "etapas": {
       "contacto": {
-        "cantidad": 2,
-        "valor": 1200000,
-        "tasaConversion": 0.45
+        "cantidad": 1,
+        "valor": 25000,
+        "tasaConversion": 0.50
       },
       "propuesta": {
-        "cantidad": 2,
-        "valor": 1500000,
-        "tasaConversion": 0.65
+        "cantidad": 3,
+        "valor": 225000,
+        "tasaConversion": 0.60
       },
       "negociacion": {
-        "cantidad": 2,
-        "valor": 1920000,
-        "tasaConversion": 0.82
+        "cantidad": 4,
+        "valor": 520000,
+        "tasaConversion": 0.75
       },
       "cierre": {
-        "cantidad": 2,
-        "valor": 4300000,
-        "tasaConversion": 0.92
+        "cantidad": 5,
+        "valor": 275000,
+        "tasaConversion": 0.85
       }
     }
   }
