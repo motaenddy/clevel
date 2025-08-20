@@ -151,6 +151,7 @@ const emit = defineEmits<{
   "client-stage-changed": [client: Client, newStage: string];
   "quick-bill": [client: Client];
   "edit-client": [client: Client];
+  "view-client-detail": [client: Client];
 }>();
 
 const router = useRouter();
@@ -204,7 +205,7 @@ const getStageColor = (stageId: string) => {
 };
 
 const viewClientDetail = (client: Client) => {
-  router.push(`/client/${client.id}`);
+  emit("view-client-detail", client);
 };
 
 const quickBillClient = (client: Client) => {
@@ -294,14 +295,38 @@ const getCentroDetallado = (clientId: string) => {
   border-radius: 8px;
   padding: 16px;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-  cursor: grab;
+  cursor: pointer;
   transition: all 0.2s ease;
   border: 1px solid var(--ion-color-light-shade);
+  position: relative;
 }
 
 .kanban-card:hover {
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
-  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+  transform: translateY(-3px);
+  border-color: var(--ion-color-primary);
+}
+
+.kanban-card::before {
+  content: "👁️ Click para ver detalles";
+  position: absolute;
+  top: -30px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: var(--ion-color-dark);
+  color: white;
+  padding: 4px 8px;
+  border-radius: 4px;
+  font-size: 0.7rem;
+  opacity: 0;
+  transition: opacity 0.2s ease;
+  pointer-events: none;
+  white-space: nowrap;
+  z-index: 10;
+}
+
+.kanban-card:hover::before {
+  opacity: 1;
 }
 
 .kanban-card:active {

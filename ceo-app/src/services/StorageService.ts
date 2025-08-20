@@ -17,6 +17,16 @@ export interface Client {
   montoPendiente?: number;
   cuotasVencidas?: number;
   etapaVenta?: 'contacto' | 'propuesta' | 'negociacion' | 'cierre';
+  // Nuevos campos del Excel
+  cotizado?: number;
+  sistema?: string;
+  contactoCliente?: string;
+  responsable?: string;
+  status?: string;
+  fechaUltimaActualizacion?: Date;
+  proximoPaso?: string;
+  fechaProximoPaso?: Date;
+  colorStatus?: 'verde' | 'amarillo' | 'azul' | 'rojo' | 'azul-oscuro' | 'morado';
 }
 
 export interface BillingItem {

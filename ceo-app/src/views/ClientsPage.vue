@@ -122,6 +122,7 @@
             @client-stage-changed="onClientStageChanged"
             @quick-bill="quickBillClient"
             @edit-client="editClient"
+            @view-client-detail="showClientDetail"
           />
         </div>
       </div>
@@ -170,6 +171,14 @@
         />
       </ion-content>
     </ion-modal>
+
+    <!-- Client Detail Modal -->
+    <ClientDetailModal
+      :is-open="showClientDetailModal"
+      :client="selectedClientForDetail"
+      @close="closeClientDetailModal"
+      @save="saveClientDetails"
+    />
   </ion-page>
 </template>
 
@@ -204,6 +213,8 @@ import ClientForm from "../components/ClientForm.vue";
 import BillingForm from "../components/BillingForm.vue";
 import SalesKanban from "../components/SalesKanban.vue";
 
+import ClientDetailModal from "../components/ClientDetailModal.vue";
+
 // Stores
 const clientsStore = useClientsStore();
 const billingStore = useBillingStore();
@@ -215,6 +226,8 @@ const viewMode = ref("kanban");
 const showAddClientModal = ref(false);
 const showBillingModal = ref(false);
 const selectedClientForBilling = ref(null);
+const showClientDetailModal = ref(false);
+const selectedClientForDetail = ref(null);
 
 const router = useRouter();
 
@@ -239,6 +252,11 @@ const filteredClients = computed(() => {
     } else if (selectedFilter.value === "inactive") {
       filtered = filtered.filter((cliente) => cliente.estado === "inactivo");
     }
+  }
+
+  // In kanban view, show all active clients by default
+  if (viewMode.value === "kanban") {
+    filtered = filtered.filter((cliente) => cliente.estado === "activo");
   }
 
   return filtered;
@@ -319,6 +337,31 @@ const getStageName = (stage: string) => {
     cierre: "Cierre",
   };
   return stageNames[stage as keyof typeof stageNames] || stage;
+};
+
+const onClientSelected = (client: any) => {
+  console.log("Cliente seleccionado:", client.nombre);
+  // Aquí puedes agregar lógica adicional para cuando se selecciona un cliente
+};
+
+const showClientDetail = (client: any) => {
+  selectedClientForDetail.value = client;
+  showClientDetailModal.value = true;
+};
+
+const closeClientDetailModal = () => {
+  showClientDetailModal.value = false;
+  selectedClientForDetail.value = null;
+};
+
+const saveClientDetails = async (updatedClient: any) => {
+  try {
+    await clientsStore.updateClient(updatedClient);
+    showClientDetailModal.value = false;
+    selectedClientForDetail.value = null;
+  } catch (error) {
+    console.error("Error updating client:", error);
+  }
 };
 
 // Load initial data
