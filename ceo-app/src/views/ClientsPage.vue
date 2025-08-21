@@ -33,27 +33,40 @@
         <ion-segment v-model="viewMode" @ionChange="onViewModeChange">
           <ion-segment-button value="list">
             <ion-icon :icon="list"></ion-icon>
-            <ion-label>Lista</ion-label>
+            <ion-label>Listado</ion-label>
           </ion-segment-button>
           <ion-segment-button value="kanban">
             <ion-icon :icon="grid"></ion-icon>
-            <ion-label>Kanban</ion-label>
+            <ion-label>Negociaciones</ion-label>
+          </ion-segment-button>
+          <ion-segment-button value="implementaciones" class="disabled-segment">
+            <ion-icon :icon="construct"></ion-icon>
+            <ion-label>Implementaciones</ion-label>
           </ion-segment-button>
         </ion-segment>
 
-        <!-- Filter Chips (only for list view) -->
-        <ion-segment
-          v-if="viewMode === 'list'"
-          v-model="selectedFilter"
-          @ionChange="filterClients"
-        >
-          <ion-segment-button value="active">
-            <ion-label>Activos</ion-label>
-          </ion-segment-button>
-          <ion-segment-button value="all">
-            <ion-label>Todos</ion-label>
-          </ion-segment-button>
-        </ion-segment>
+        <!-- Filter Select (only for list view) -->
+        <div v-if="viewMode === 'list'" class="filter-container">
+          <ion-item>
+            <ion-label>Filtrar por estado:</ion-label>
+            <ion-select
+              v-model="selectedFilter"
+              @ionChange="filterClients"
+              interface="popover"
+              placeholder="Seleccionar filtro"
+            >
+              <ion-select-option value="all">Todos</ion-select-option>
+              <ion-select-option value="active">Activos</ion-select-option>
+              <ion-select-option value="implementacion"
+                >En Implementación</ion-select-option
+              >
+              <ion-select-option value="negociacion"
+                >En Negociación</ion-select-option
+              >
+              <ion-select-option value="inactive">Inactivos</ion-select-option>
+            </ion-select>
+          </ion-item>
+        </div>
 
         <!-- List View -->
         <div v-if="viewMode === 'list'">
@@ -203,8 +216,18 @@ import {
   IonNote,
   IonModal,
   IonChip,
+  IonSelect,
+  IonSelectOption,
 } from "@ionic/vue";
-import { add, business, people, card, list, grid } from "ionicons/icons";
+import {
+  add,
+  business,
+  people,
+  card,
+  list,
+  grid,
+  construct,
+} from "ionicons/icons";
 import { ref, computed, onMounted } from "vue";
 import { useRouter } from "vue-router";
 import { useClientsStore } from "../stores/clients";
@@ -221,7 +244,7 @@ const billingStore = useBillingStore();
 
 // Reactive data
 const searchTerm = ref("");
-const selectedFilter = ref("active");
+const selectedFilter = ref("all");
 const viewMode = ref("kanban");
 const showAddClientModal = ref(false);
 const showBillingModal = ref(false);
@@ -251,7 +274,23 @@ const filteredClients = computed(() => {
       filtered = filtered.filter((cliente) => cliente.estado === "activo");
     } else if (selectedFilter.value === "inactive") {
       filtered = filtered.filter((cliente) => cliente.estado === "inactivo");
+    } else if (selectedFilter.value === "implementacion") {
+      // Filtrar por clientes en implementación (color amarillo o azul)
+      filtered = filtered.filter(
+        (cliente) =>
+          cliente.estado === "activo" &&
+          (cliente.colorStatus === "amarillo" || cliente.colorStatus === "azul")
+      );
+    } else if (selectedFilter.value === "negociacion") {
+      // Filtrar por clientes en negociación (etapa negociacion o propuesta)
+      filtered = filtered.filter(
+        (cliente) =>
+          cliente.estado === "activo" &&
+          (cliente.etapaVenta === "negociacion" ||
+            cliente.etapaVenta === "propuesta")
+      );
     }
+    // Si es "all", no se aplica ningún filtro adicional
   }
 
   // In kanban view, show all active clients by default
@@ -305,7 +344,15 @@ const onViewModeChange = () => {
   // Reset filters when switching views
   if (viewMode.value === "kanban") {
     selectedFilter.value = "all";
-    searchTerm.value = ""; // Clear search in kanban view
+    searchTerm.value = ""; // Clear search in kanban view (negociaciones)
+  } else if (viewMode.value === "list") {
+    // Keep current filter when switching to list view
+    // This allows users to maintain their filter preference
+  } else if (viewMode.value === "implementaciones") {
+    // Prevent switching to implementaciones for now
+    // Reset to previous valid view
+    viewMode.value = "kanban";
+    console.log("Implementaciones view is not available yet");
   }
 };
 
@@ -451,5 +498,46 @@ onMounted(async () => {
   gap: 8px;
   margin-top: 8px;
   flex-wrap: wrap;
+}
+
+.filter-container {
+  margin-bottom: 16px;
+  background: white;
+  border-radius: 8px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.filter-container ion-item {
+  --background: transparent;
+  --border-color: transparent;
+}
+
+.filter-container ion-label {
+  font-weight: 600;
+  color: var(--ion-color-dark);
+}
+
+.filter-container ion-select {
+  --placeholder-color: var(--ion-color-medium);
+}
+
+/* Disabled segment styles */
+.disabled-segment {
+  opacity: 0.5;
+  pointer-events: none;
+  cursor: not-allowed;
+}
+
+.disabled-segment ion-label {
+  color: var(--ion-color-medium) !important;
+}
+
+.disabled-segment ion-icon {
+  color: var(--ion-color-medium) !important;
+}
+
+/* Hover effect to show it's disabled */
+.disabled-segment:hover {
+  opacity: 0.3;
 }
 </style>
